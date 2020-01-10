@@ -1,0 +1,1 @@
+ALTER TABLE public."Files" ALTER COLUMN f_type TYPE int8 USING f_type::int8;

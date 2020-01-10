@@ -1,0 +1,1 @@
+alter table "Files" drop column f_fullpath;

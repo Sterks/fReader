@@ -1,0 +1,1 @@
+alter table "Files" add column f_fullpath varchar;

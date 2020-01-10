@@ -1,0 +1,1 @@
+alter table "Files" drop column f_file_is_dir;
