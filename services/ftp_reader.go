@@ -10,13 +10,11 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/Sterks/FReader/config"
 	"github.com/Sterks/FReader/services/db"
-	"github.com/patrickmn/go-cache"
 	"github.com/secsy/goftp"
 )
 
@@ -42,7 +40,7 @@ func (f *FtpReader) Connect() (*goftp.Client, error) {
 		User:     "free",
 		Password: "free",
 		// Logger:   os.Stderr,
-		Timeout: 100 * time.Second,
+		Timeout: 3 * time.Minute,
 	}
 	c, err := goftp.DialConfig(ftpServ, "ftp.zakupki.gov.ru:21")
 	if err != nil {
@@ -186,24 +184,26 @@ func Walk(client *goftp.Client, root string, walkFn filepath.WalkFunc, rev bool,
 }
 
 // GetListFolder ...
-func (f *FtpReader) GetListFolder(c *cache.Cache) []string {
+func (f *FtpReader) GetListFolder() []string {
 	rootPath := "/fcs_regions"
 	var listFolder []os.FileInfo
-	massFiles, found := c.Get("massFiles")
-	if found {
-		listFolder = massFiles.([]os.FileInfo)
-	} else {
-		listFolder, _ = f.ftp.ReadDir(rootPath)
-		// if err2 != nil {
-		// 	log.Printf("Соединение - %v", err2)
-		// }
-	}
+	// massFiles, found := c.Get("massFiles")
+	// var erro error
+	// if found {
+	// 	listFolder = massFiles.([]os.FileInfo)
+	// } else {
+	// 	listFolder, erro = f.ftp.ReadDir(rootPath)
 
+	// }
+	listFolder, erro := f.ftp.ReadDir(rootPath)
+	if erro != nil {
+		log.Printf("Соединение - %v", erro)
+	}
 	var listPath []string
 	for _, value := range listFolder {
 		if value.IsDir() == true {
 			listPath = append(listPath, value.Name())
-			c.Set("massFiles", value.Name(), cache.DefaultExpiration)
+			// c.Set("massFiles", value.Name(), cache.DefaultExpiration)
 		}
 	}
 
@@ -213,9 +213,9 @@ func (f *FtpReader) GetListFolder(c *cache.Cache) []string {
 }
 
 // TaskManager ...
-func (f *FtpReader) TaskManager(from time.Time, to time.Time, typeFile string, wg *sync.WaitGroup, c *cache.Cache) {
-	defer wg.Done()
-	listRegions := f.GetListFolder(c)
+func (f *FtpReader) TaskManager(from time.Time, to time.Time, typeFile string) {
+
+	listRegions := f.GetListFolder()
 	for _, region := range listRegions {
 		rootPath := "/fcs_regions"
 		pathServer := fmt.Sprintf("%s/%s/%s", rootPath, region, typeFile)

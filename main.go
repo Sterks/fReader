@@ -7,7 +7,6 @@ import (
 	"github.com/BurntSushi/toml"
 	"github.com/Sterks/FReader/config"
 	"github.com/Sterks/FReader/services"
-	"github.com/patrickmn/go-cache"
 )
 
 func main() {
@@ -28,11 +27,22 @@ func mainRunner() {
 	// from, _ := time.Parse(time.RFC3339, str)
 	to := time.Now()
 
-	c := cache.New(1*time.Hour, 2*time.Hour)
-
 	var wg sync.WaitGroup
 	wg.Add(2)
-	go f.TaskManager(from, to, "notifications", &wg, c)
-	go f.TaskManager(from, to, "protocols", &wg, c)
+	ticker := time.NewTicker(time.Minute * 10)
+	go TaskRun(f, from, to, "notifications", ticker, &wg)
+	ticker2 := time.NewTicker(time.Minute * 7)
+	go TaskRun(f, from, to, "protocols", ticker2, &wg)
 	wg.Wait()
+}
+
+// TaskRun - метод для организации таск
+func TaskRun(f *services.FtpReader, from time.Time, to time.Time, tt string, ticker *time.Ticker, wg *sync.WaitGroup) {
+	defer ticker.Stop()
+	defer wg.Done()
+	for {
+		<-ticker.C
+		f.TaskManager(from, to, tt)
+	}
+
 }
