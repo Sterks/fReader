@@ -26,11 +26,16 @@ func mainRunner() {
 	// str := "2020-12-25"
 	// from, _ := time.Parse(time.RFC3339, str)
 	to := time.Now()
-
+	// ticker := time.NewTicker(time.Second * 1)
+	// var wg sync.WaitGroup
+	// wg.Add(1)
+	// go TaskRun(f, from, to, "notifications", ticker, &wg)
+	// wg.Wait()
 	var wg sync.WaitGroup
 	wg.Add(2)
-	ticker := time.NewTicker(time.Minute * 10)
+	ticker := time.NewTicker(time.Minute * 3)
 	go TaskRun(f, from, to, "notifications", ticker, &wg)
+
 	ticker2 := time.NewTicker(time.Minute * 7)
 	go TaskRun(f, from, to, "protocols", ticker2, &wg)
 	wg.Wait()

@@ -22,14 +22,14 @@ import (
 type FtpReader struct {
 	config *config.Config
 	ftp    *goftp.Client
-	Db     *db.Store
+	Db     *db.Database
 }
 
 // New инициализация сервера
 func New(conf *config.Config) *FtpReader {
 	return &FtpReader{
 		config: conf,
-		Db:     &db.Store{},
+		Db:     &db.Database{},
 		ftp:    &goftp.Client{},
 	}
 }
@@ -58,7 +58,7 @@ func (f *FtpReader) Start() *FtpReader {
 	}
 	f.ftp = ftp
 
-	f.Db.OpenDb()
+	f.Db.OpenDatabase()
 
 	log.Println("Сервис запускается ...")
 
@@ -214,11 +214,16 @@ func (f *FtpReader) GetListFolder() []string {
 
 // TaskManager ...
 func (f *FtpReader) TaskManager(from time.Time, to time.Time, typeFile string) {
-
+	log.Printf("Запуск загрузки %v", typeFile)
+	t1 := time.Now()
 	listRegions := f.GetListFolder()
 	for _, region := range listRegions {
 		rootPath := "/fcs_regions"
 		pathServer := fmt.Sprintf("%s/%s/%s", rootPath, region, typeFile)
 		f.GetFileInfo(pathServer, true, true, true, from, to, region, false)
 	}
+	t2 := time.Now()
+	t3 := t2.Sub(t1)
+	fmt.Printf("Время работы загрузки %v\n", t3)
+	log.Printf("Загрузка %v завершена \n", typeFile)
 }
