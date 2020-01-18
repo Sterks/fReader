@@ -8,9 +8,10 @@ import (
 
 	model "github.com/Sterks/FReader/models"
 	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/jinzhu/gorm/dialects/postgres" //....
 )
 
+//Database ...
 type Database struct {
 	database *gorm.DB
 }
@@ -23,6 +24,7 @@ const (
 	dbname   = "freader"
 )
 
+// OpenDatabase ...
 func (d *Database) OpenDatabase() {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
@@ -95,6 +97,7 @@ func (d *Database) ReaderRegionsDb() []model.SourceRegions {
 	return regions
 }
 
+//AddRegionsDb ...
 func (d *Database) AddRegionsDb(region string) {
 	var reg model.SourceRegions
 	reg.RName = region

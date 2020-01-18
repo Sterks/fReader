@@ -14,8 +14,9 @@ import (
 	"time"
 
 	"github.com/Sterks/FReader/config"
-	"github.com/Sterks/FReader/services/db"
-	"github.com/Sterks/FReader/services/router"
+	"github.com/Sterks/FReader/db"
+	"github.com/Sterks/FReader/router"
+
 	"github.com/secsy/goftp"
 )
 

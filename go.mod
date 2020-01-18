@@ -12,5 +12,6 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/secsy/goftp v0.0.0-20190720192957-f31499d7c79a
+	github.com/sirupsen/logrus v1.4.2
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )
