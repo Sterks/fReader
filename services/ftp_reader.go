@@ -184,17 +184,9 @@ func Walk(client *goftp.Client, root string, walkFn filepath.WalkFunc, rev bool,
 }
 
 // GetListFolder ...
-func (f *FtpReader) GetListFolder() []string {
+func (f *FtpReader) GetListFolderFtp() []string {
 	rootPath := "/fcs_regions"
 	var listFolder []os.FileInfo
-	// massFiles, found := c.Get("massFiles")
-	// var erro error
-	// if found {
-	// 	listFolder = massFiles.([]os.FileInfo)
-	// } else {
-	// 	listFolder, erro = f.ftp.ReadDir(rootPath)
-
-	// }
 	listFolder, erro := f.ftp.ReadDir(rootPath)
 	if erro != nil {
 		log.Printf("Соединение - %v", erro)
@@ -203,20 +195,46 @@ func (f *FtpReader) GetListFolder() []string {
 	for _, value := range listFolder {
 		if value.IsDir() == true {
 			listPath = append(listPath, value.Name())
-			// c.Set("massFiles", value.Name(), cache.DefaultExpiration)
 		}
 	}
-
 	log.Printf("Получен список папок в /fcs_regions")
 
 	return listPath
+}
+
+func (f *FtpReader) GetListFolderDb() []string {
+	var listFolder []string
+	listRegDb := f.Db.ReaderRegionsDb()
+	for _, value := range listRegDb {
+		if value.RID != 0 {
+			listFolder = append(listFolder, value.RName)
+		}
+	}
+	return listFolder
+}
+
+func (f *FtpReader) GetListFolder() {
+	rootPath := "/fcs_regions"
+	listFolder, err := f.ftp.ReadDir(rootPath)
+	if err != nil {
+		log.Printf("Не удается подключиться к FTP серверу - ошибка %v", err)
+	}
+	for _, value := range listFolder {
+		if value.IsDir() == true {
+			if f.Db.CheckRegionsDb(value.Name()) == 0 {
+				f.Db.AddRegionsDb(value.Name())
+				fmt.Printf("Добавлен регион %v\n", value.Name())
+			}
+		}
+	}
 }
 
 // TaskManager ...
 func (f *FtpReader) TaskManager(from time.Time, to time.Time, typeFile string) {
 	log.Printf("Запуск загрузки %v", typeFile)
 	t1 := time.Now()
-	listRegions := f.GetListFolder()
+
+	listRegions := f.GetListFolderDb()
 	for _, region := range listRegions {
 		rootPath := "/fcs_regions"
 		pathServer := fmt.Sprintf("%s/%s/%s", rootPath, region, typeFile)
@@ -226,4 +244,19 @@ func (f *FtpReader) TaskManager(from time.Time, to time.Time, typeFile string) {
 	t3 := t2.Sub(t1)
 	fmt.Printf("Время работы загрузки %v\n", t3)
 	log.Printf("Загрузка %v завершена \n", typeFile)
+}
+
+func (f *FtpReader) FirstChecherRegions() {
+	var checkVal string
+	listFolder := f.GetListFolderDb()
+	for _, value := range listFolder {
+		if value != "" {
+			continue
+		} else {
+			checkVal = "Есть"
+		}
+	}
+	if checkVal == "" {
+		f.GetListFolder()
+	}
 }

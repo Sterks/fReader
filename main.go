@@ -31,8 +31,12 @@ func mainRunner() {
 	// wg.Add(1)
 	// go TaskRun(f, from, to, "notifications", ticker, &wg)
 	// wg.Wait()
+
+	f.FirstChecherRegions()
+
 	var wg sync.WaitGroup
 	wg.Add(2)
+
 	ticker := time.NewTicker(time.Minute * 3)
 	go TaskRun(f, from, to, "notifications", ticker, &wg)
 

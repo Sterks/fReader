@@ -68,10 +68,33 @@ func (d *Database) CreateInfoFile(info os.FileInfo, region string, hash string, 
 	}
 }
 
+// CheckExistFileDb ...
 func (d *Database) CheckExistFileDb(file os.FileInfo, hash string) int {
 	var ff model.File
 	d.database.Table("Files").Where("f_hash = ? and f_size = ? and f_name = ?", hash, file.Size(), file.Name()).Find(&ff)
 	ff.TDateLastCheck = time.Now()
 	d.database.Save(&ff)
 	return ff.TID
+}
+
+//CheckRegionsDb Проверка существует ли регион в базе данных
+func (d *Database) CheckRegionsDb(region string) int {
+	var reg model.SourceRegions
+	d.database.Table("SourceRegions").Where("r_name = ?", region).First(&reg)
+	return reg.RID
+}
+
+//ReaderRegionsDb Все регионы из базы
+func (d *Database) ReaderRegionsDb() []model.SourceRegions {
+	var regions []model.SourceRegions
+	d.database.Table("SourceRegions").Select(&regions)
+	return regions
+}
+
+func (d *Database) AddRegionsDb(region string) {
+	var reg model.SourceRegions
+	reg.RName = region
+	reg.RDateCreate = time.Now()
+	reg.RDateUpdate = time.Now()
+	d.database.Table("SourceRegions").Create(&reg)
 }
