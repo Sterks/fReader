@@ -45,6 +45,12 @@ func (d *Database) CreateInfoFile(info os.FileInfo, region string, hash string, 
 	d.database.LogMode(true)
 
 	checker := d.CheckExistFileDb(info, hash)
+	if checker != 0 {
+		var lf model.File
+		d.database.Table("Files").Where("f_id = ?", checker).Find(&lf)
+		lf.TDateLastCheck = time.Now()
+		d.database.Save(&lf)
+	}
 	if checker == 0 {
 
 		var fileType model.FileType
@@ -72,8 +78,6 @@ func (d *Database) CreateInfoFile(info os.FileInfo, region string, hash string, 
 func (d *Database) CheckExistFileDb(file os.FileInfo, hash string) int {
 	var ff model.File
 	d.database.Table("Files").Where("f_hash = ? and f_size = ? and f_name = ?", hash, file.Size(), file.Name()).Find(&ff)
-	ff.TDateLastCheck = time.Now()
-	d.database.Save(&ff)
 	return ff.TID
 }
 
@@ -87,7 +91,7 @@ func (d *Database) CheckRegionsDb(region string) int {
 //ReaderRegionsDb Все регионы из базы
 func (d *Database) ReaderRegionsDb() []model.SourceRegions {
 	var regions []model.SourceRegions
-	d.database.Table("SourceRegions").Select(&regions)
+	d.database.Table("SourceRegions").Find(&regions)
 	return regions
 }
 
