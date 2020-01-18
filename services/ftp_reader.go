@@ -15,6 +15,7 @@ import (
 
 	"github.com/Sterks/FReader/config"
 	"github.com/Sterks/FReader/services/db"
+	"github.com/Sterks/FReader/services/router"
 	"github.com/secsy/goftp"
 )
 
@@ -23,6 +24,7 @@ type FtpReader struct {
 	config *config.Config
 	ftp    *goftp.Client
 	Db     *db.Database
+	router *router.WebServer
 }
 
 // New инициализация сервера
@@ -31,6 +33,7 @@ func New(conf *config.Config) *FtpReader {
 		config: conf,
 		Db:     &db.Database{},
 		ftp:    &goftp.Client{},
+		router: &router.WebServer{},
 	}
 }
 
@@ -59,7 +62,7 @@ func (f *FtpReader) Start() *FtpReader {
 	f.ftp = ftp
 
 	f.Db.OpenDatabase()
-
+	// f.router.StartWebServer()
 	log.Println("Сервис запускается ...")
 
 	return f
@@ -67,6 +70,7 @@ func (f *FtpReader) Start() *FtpReader {
 
 // GetFileInfo ...
 func (f *FtpReader) GetFileInfo(path string, rev bool, down bool, addDb bool, from time.Time, to time.Time, region string, hashReader bool) {
+	fmt.Println(path)
 	client := f.ftp
 	Walk(client, path, func(fullPath string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -183,7 +187,7 @@ func Walk(client *goftp.Client, root string, walkFn filepath.WalkFunc, rev bool,
 	return ret
 }
 
-// GetListFolder ...
+// GetListFolderFtp ...
 func (f *FtpReader) GetListFolderFtp() []string {
 	rootPath := "/fcs_regions"
 	var listFolder []os.FileInfo
@@ -202,6 +206,7 @@ func (f *FtpReader) GetListFolderFtp() []string {
 	return listPath
 }
 
+//GetListFolderDb ....
 func (f *FtpReader) GetListFolderDb() []string {
 	var listFolder []string
 	listRegDb := f.Db.ReaderRegionsDb()
@@ -213,6 +218,7 @@ func (f *FtpReader) GetListFolderDb() []string {
 	return listFolder
 }
 
+//GetListFolder ...
 func (f *FtpReader) GetListFolder() {
 	rootPath := "/fcs_regions"
 	listFolder, err := f.ftp.ReadDir(rootPath)
@@ -246,6 +252,7 @@ func (f *FtpReader) TaskManager(from time.Time, to time.Time, typeFile string) {
 	log.Printf("Загрузка %v завершена \n", typeFile)
 }
 
+//FirstChecherRegions ...
 func (f *FtpReader) FirstChecherRegions() {
 	var checkVal string
 	listFolder := f.GetListFolderDb()
