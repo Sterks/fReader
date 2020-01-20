@@ -5,8 +5,8 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/Sterks/FReader/config"
+	"github.com/Sterks/FReader/router"
 	"github.com/Sterks/FReader/services"
-	"github.com/Sterks/FReader/services/router"
 )
 
 func main() {
@@ -14,7 +14,7 @@ func main() {
 }
 
 func mainRunner() {
-	configPath := "config/config.toml"
+	configPath := "config/config.prod.toml"
 	config := config.NewConf()
 	toml.DecodeFile(configPath, &config)
 	ftpreader := services.New(config)
@@ -30,10 +30,10 @@ func mainRunner() {
 	// to := time.Now()
 	go f.FirstChecherRegions()
 
-	ticker := time.NewTicker(time.Minute * 1)
+	ticker := time.NewTicker(time.Duration(config.Tasks.Notifications) * time.Hour)
 	go TaskRun(f, from, to, "notifications", ticker)
 
-	ticker2 := time.NewTicker(time.Minute * 2)
+	ticker2 := time.NewTicker(time.Duration(config.Tasks.Protocols) * time.Minute)
 	go TaskRun(f, from, to, "protocols", ticker2)
 
 	// ticker := time.NewTicker(time.Second * 1)

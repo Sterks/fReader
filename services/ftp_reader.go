@@ -15,6 +15,7 @@ import (
 
 	"github.com/Sterks/FReader/config"
 	"github.com/Sterks/FReader/db"
+	"github.com/Sterks/FReader/logger"
 	"github.com/Sterks/FReader/router"
 
 	"github.com/secsy/goftp"
@@ -26,6 +27,7 @@ type FtpReader struct {
 	ftp    *goftp.Client
 	Db     *db.Database
 	router *router.WebServer
+	logger *logger.Logger
 }
 
 // New инициализация сервера
@@ -35,6 +37,7 @@ func New(conf *config.Config) *FtpReader {
 		Db:     &db.Database{},
 		ftp:    &goftp.Client{},
 		router: &router.WebServer{},
+		logger: &logger.Logger{},
 	}
 }
 
@@ -63,9 +66,8 @@ func (f *FtpReader) Start() *FtpReader {
 	f.ftp = ftp
 
 	f.Db.OpenDatabase()
-	// f.router.StartWebServer()
-	log.Println("Сервис запускается ...")
-
+	f.logger.ConfigureLogger()
+	f.logger.InfoLog("Сервис запускается ...")
 	return f
 }
 
@@ -190,7 +192,8 @@ func Walk(client *goftp.Client, root string, walkFn filepath.WalkFunc, rev bool,
 
 // GetListFolderFtp ...
 func (f *FtpReader) GetListFolderFtp() []string {
-	rootPath := "/fcs_regions"
+	// rootPath := "/fcs_regions"
+	rootPath := f.config.Directory.RootPath
 	var listFolder []os.FileInfo
 	listFolder, erro := f.ftp.ReadDir(rootPath)
 	if erro != nil {

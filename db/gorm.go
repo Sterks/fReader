@@ -2,10 +2,10 @@ package db
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
+	"github.com/Sterks/FReader/logger"
 	model "github.com/Sterks/FReader/models"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres" //....
@@ -14,6 +14,7 @@ import (
 //Database ...
 type Database struct {
 	database *gorm.DB
+	logger   *logger.Logger
 }
 
 const (
@@ -34,10 +35,9 @@ func (d *Database) OpenDatabase() {
 		fmt.Printf("Соединиться не удалось - %s", err)
 	}
 	if err2 := db.DB().Ping(); err2 != nil {
-		log.Println(err2)
+		d.logger.ErrorLog("База не отвечает", err2)
 	}
 	d.database = db
-
 }
 
 // CreateInfoFile ...
