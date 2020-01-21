@@ -32,7 +32,7 @@ func (w *WebServer) StartWebServer() {
 
 	srv := &http.Server{
 		Handler: r,
-		Addr:    w.config.ServerConnect,
+		Addr:    w.config.MainSettings.ServerConnect,
 	}
 	log.Fatal(srv.ListenAndServe())
 }

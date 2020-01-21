@@ -33,7 +33,7 @@ type FtpReader struct {
 // New инициализация сервера
 func New(conf *config.Config) *FtpReader {
 	return &FtpReader{
-		config: conf,
+		config: &config.Config{},
 		Db:     &db.Database{},
 		ftp:    &goftp.Client{},
 		router: &router.WebServer{},
@@ -58,15 +58,16 @@ func (f *FtpReader) Connect() (*goftp.Client, error) {
 }
 
 // Start ...
-func (f *FtpReader) Start() *FtpReader {
+func (f *FtpReader) Start(config *config.Config) *FtpReader {
 	ftp, err := f.Connect()
 	if err != nil {
 		log.Printf("Проблемы с соединением - %v", err)
 	}
 	f.ftp = ftp
 
+	// f.config.ConfigConfigure(f.config)
 	f.Db.OpenDatabase()
-	f.logger.ConfigureLogger()
+	f.logger.ConfigureLogger(config)
 	f.logger.InfoLog("Сервис запускается ...")
 	return f
 }

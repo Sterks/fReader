@@ -32,7 +32,7 @@ func (d *Database) OpenDatabase() {
 		host, port, user, password, dbname)
 	db, err := gorm.Open("postgres", psqlInfo)
 	if err != nil {
-		fmt.Printf("Соединиться не удалось - %s", err)
+		d.logger.ErrorLog("Соединиться не удалось - %s", err)
 	}
 	if err2 := db.DB().Ping(); err2 != nil {
 		d.logger.ErrorLog("База не отвечает", err2)

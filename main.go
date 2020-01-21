@@ -18,7 +18,7 @@ func mainRunner() {
 	config := config.NewConf()
 	toml.DecodeFile(configPath, &config)
 	ftpreader := services.New(config)
-	f := ftpreader.Start()
+	f := ftpreader.Start(config)
 
 	now := time.Now()
 	y, m, d := now.Date()

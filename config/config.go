@@ -1,16 +1,22 @@
 package config
 
-//MainSettings ...
-type MainSettings struct {
-	Config Config
-}
+import (
+	"log"
+
+	"github.com/BurntSushi/toml"
+)
 
 //Config ...
 type Config struct {
+	MainSettings MainSettings
+	Directory    Directory
+	Tasks        Tasks
+}
+
+//MainSettings ...
+type MainSettings struct {
 	ServerConnect string `toml:"server_connect"`
 	LogLevel      string `toml:"log_level"`
-	Directory     Directory
-	Tasks         Tasks
 }
 
 // Directory ...
@@ -27,7 +33,17 @@ type Tasks struct {
 // NewConf инициализация конфигурации
 func NewConf() *Config {
 	return &Config{
-		ServerConnect: "",
-		LogLevel:      "",
+		MainSettings: MainSettings{},
+		Directory:    Directory{},
+		Tasks:        Tasks{},
+	}
+}
+
+// ConfigConfigure ...
+func (conf *Config) ConfigConfigure() {
+	configPath := "config/config.prod.toml"
+	_, err := toml.DecodeFile(configPath, conf)
+	if err != nil {
+		log.Printf("Ошибка - %v", err)
 	}
 }

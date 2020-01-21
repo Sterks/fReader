@@ -15,17 +15,20 @@ type Logger struct {
 func NewLogger() *Logger {
 	return &Logger{
 		logger: logrus.New(),
+		config: &config.Config{},
 	}
 }
 
 // ConfigureLogger ....
-func (l *Logger) ConfigureLogger() {
-	l.logger = logrus.New()
-	ll, err := logrus.ParseLevel("debug")
+func (l *Logger) ConfigureLogger(conf *config.Config) {
+	logr := logrus.New()
+	l.logger = logr
+	cc := conf.MainSettings.LogLevel
+	c, err := logrus.ParseLevel(cc)
 	if err != nil {
-		l.logger.Println(err)
+		l.logger.Errorf("Ошибка %v", err)
 	}
-	l.logger.SetLevel(ll)
+	l.logger.SetLevel(c)
 	customFormat := new(logrus.TextFormatter)
 	customFormat.TimestampFormat = "2006-01-02 15:04:05"
 	customFormat.FullTimestamp = true
