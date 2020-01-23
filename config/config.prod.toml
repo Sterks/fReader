@@ -1,10 +1,11 @@
 [MainSettings]
 server_connect = "127.0.0.1:8000"
-log_level = "error"
+log_level = "debug"
 
 [Directory]
 root_path = "/fcs_regions"
+main_folder = "./Files"
 
 [Tasks]
-notifications = 3
-protocols = 1
+notifications = 1
+protocols = 9

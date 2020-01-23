@@ -1,1 +1,3 @@
-.vscode
+.vscode/
+.Files/
+.DS_Store

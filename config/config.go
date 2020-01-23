@@ -21,7 +21,8 @@ type MainSettings struct {
 
 // Directory ...
 type Directory struct {
-	RootPath string `toml:"root_path"`
+	RootPath   string `toml:"root_path"`
+	MainFolder string `toml:"main_folder"`
 }
 
 // Tasks ...

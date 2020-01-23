@@ -13,6 +13,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Sterks/FReader/common"
 	"github.com/Sterks/FReader/config"
 	"github.com/Sterks/FReader/db"
 	"github.com/Sterks/FReader/logger"
@@ -65,10 +66,9 @@ func (f *FtpReader) Start(config *config.Config) *FtpReader {
 	}
 	f.ftp = ftp
 
-	// f.config.ConfigConfigure(f.config)
-	f.Db.OpenDatabase()
 	f.logger.ConfigureLogger(config)
-	f.logger.InfoLog("Сервис запускается ...")
+	f.Db.OpenDatabase(config, f.logger)
+	f.logger.InfoLog("Сервис запускается ...", "")
 	return f
 }
 
@@ -90,20 +90,28 @@ func (f *FtpReader) GetFileInfo(path string, rev bool, down bool, addDb bool, fr
 			if addDb == true {
 				if down == true {
 					if hashReader == true {
-						buf := new(bytes.Buffer)
-						file, _ := os.Create(info.Name())
-						defer file.Close()
-						infoBuf := io.TeeReader(buf, file)
-						err = client.Retrieve(fullPath, buf)
-						if err != nil {
-							log.Println(err)
+						id := f.Db.CreateInfoFile(info, region, Hash, fullPath)
+						if id != 0 {
+							pathLocal := common.CreateFolder(f.config, id)
+
+							// stringID := strconv.Itoa(id)
+							nameFile := common.GenerateID(id)
+							buf := new(bytes.Buffer)
+							file, _ := os.Create(f.config.Directory.MainFolder + "/" + pathLocal + nameFile)
+							// file, _ := os.Create(f.config.FileDir + "/" + m + "/" + stringID)
+							defer file.Close()
+							infoBuf := io.TeeReader(buf, file)
+							err = client.Retrieve(fullPath, buf)
+							if err != nil {
+								log.Println(err)
+							}
+							var hasher = sha256.New()
+							_, err = io.Copy(hasher, infoBuf)
+							if err != nil {
+								log.Println(err)
+							}
+							Hash = hex.EncodeToString(hasher.Sum(nil))
 						}
-						var hasher = sha256.New()
-						_, err = io.Copy(hasher, infoBuf)
-						if err != nil {
-							log.Println(err)
-						}
-						Hash = hex.EncodeToString(hasher.Sum(nil))
 						// fmt.Println(fullPath, Hash)
 					} else {
 						buf := new(bytes.Buffer)
@@ -120,7 +128,6 @@ func (f *FtpReader) GetFileInfo(path string, rev bool, down bool, addDb bool, fr
 						// fmt.Println(fullPath, Hash)
 					}
 				}
-				f.Db.CreateInfoFile(info, region, Hash, fullPath)
 			} else {
 				buf := new(bytes.Buffer)
 				err = client.Retrieve(fullPath, buf)
@@ -241,20 +248,22 @@ func (f *FtpReader) GetListFolder() {
 }
 
 // TaskManager ...
-func (f *FtpReader) TaskManager(from time.Time, to time.Time, typeFile string) {
-	log.Printf("Запуск загрузки %v", typeFile)
+func (f *FtpReader) TaskManager(from time.Time, to time.Time, typeFile string, config *config.Config) {
+	f.config = config
+	f.logger.InfoLog("Запуск загрузки ", typeFile)
 	t1 := time.Now()
 
 	listRegions := f.GetListFolderDb()
 	for _, region := range listRegions {
-		rootPath := "/fcs_regions"
+		// rootPath := "/fcs_regions"
+		rootPath := f.config.Directory.RootPath
 		pathServer := fmt.Sprintf("%s/%s/%s", rootPath, region, typeFile)
-		f.GetFileInfo(pathServer, true, true, true, from, to, region, false)
+		f.GetFileInfo(pathServer, true, true, true, from, to, region, true)
 	}
 	t2 := time.Now()
 	t3 := t2.Sub(t1)
-	fmt.Printf("Время работы загрузки %v\n", t3)
-	log.Printf("Загрузка %v завершена \n", typeFile)
+	f.logger.InfoLog("Время работы загрузки ", t3.String())
+	f.logger.InfoLog("Загрузка завершена \n", typeFile)
 }
 
 //FirstChecherRegions ...

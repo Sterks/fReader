@@ -5,6 +5,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/Sterks/FReader/config"
 	"github.com/Sterks/FReader/logger"
 	model "github.com/Sterks/FReader/models"
 	"github.com/jinzhu/gorm"
@@ -13,6 +14,7 @@ import (
 
 //Database ...
 type Database struct {
+	config   *config.Config
 	database *gorm.DB
 	logger   *logger.Logger
 }
@@ -26,7 +28,7 @@ const (
 )
 
 // OpenDatabase ...
-func (d *Database) OpenDatabase() {
+func (d *Database) OpenDatabase(config *config.Config, logger *logger.Logger) {
 	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
 		"password=%s dbname=%s sslmode=disable",
 		host, port, user, password, dbname)
@@ -38,10 +40,12 @@ func (d *Database) OpenDatabase() {
 		d.logger.ErrorLog("База не отвечает", err2)
 	}
 	d.database = db
+	d.config = config
+	d.logger = logger
 }
 
 // CreateInfoFile ...
-func (d *Database) CreateInfoFile(info os.FileInfo, region string, hash string, fullpath string) {
+func (d *Database) CreateInfoFile(info os.FileInfo, region string, hash string, fullpath string) int {
 	// d.database.Set("gorm:association_autoupdate", false).Set("gorm:association_autocreate", false).Create(&files)
 	// filesTypes := d.database.Table("FileType")
 	d.database.LogMode(true)
@@ -52,10 +56,12 @@ func (d *Database) CreateInfoFile(info os.FileInfo, region string, hash string, 
 		d.database.Table("Files").Where("f_id = ?", checker).Find(&lf)
 		lf.TDateLastCheck = time.Now()
 		d.database.Save(&lf)
+		d.logger.InfoLog("Дата успешно обновлена", lf.TDateLastCheck.String())
 	}
 	if checker == 0 {
 
 		var fileType model.FileType
+		var lastID model.File
 		d.database.Table("FilesTypes").Where("ft_name = ?", "ZIP архив").Find(&fileType)
 
 		d.database.Table("Files")
@@ -70,9 +76,12 @@ func (d *Database) CreateInfoFile(info os.FileInfo, region string, hash string, 
 			TDateCreateFromSource: info.ModTime(),
 			TDateLastCheck:        time.Now(),
 			TFullpath:             fullpath,
-		})
+		}).Scan(&lastID)
+		d.logger.InfoLog("Файл успешно добавлен", lastID.TName)
+		return lastID.TID
 	} else {
 		fmt.Printf("Файл существует - %v\n", info.Name())
+		return 0
 	}
 }
 

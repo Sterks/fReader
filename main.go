@@ -30,13 +30,13 @@ func mainRunner() {
 	// to := time.Now()
 	go f.FirstChecherRegions()
 
-	ticker := time.NewTicker(time.Duration(config.Tasks.Notifications) * time.Hour)
-	go TaskRun(f, from, to, "notifications", ticker)
+	ticker := time.NewTicker(time.Duration(config.Tasks.Notifications) * time.Minute)
+	// ticker := time.NewTicker(time.Second * 1)
+	go TaskRun(f, from, to, "notifications", ticker, config)
 
 	ticker2 := time.NewTicker(time.Duration(config.Tasks.Protocols) * time.Minute)
-	go TaskRun(f, from, to, "protocols", ticker2)
+	go TaskRun(f, from, to, "protocols", ticker2, config)
 
-	// ticker := time.NewTicker(time.Second * 1)
 	// var wg sync.WaitGroup
 	// wg.Add(1)
 	// go TaskRun(f, from, to, "notifications", ticker, &wg)
@@ -56,11 +56,11 @@ func mainRunner() {
 }
 
 // TaskRun - метод для организации таск
-func TaskRun(f *services.FtpReader, from time.Time, to time.Time, tt string, ticker *time.Ticker) {
+func TaskRun(f *services.FtpReader, from time.Time, to time.Time, tt string, ticker *time.Ticker, config *config.Config) {
 	defer ticker.Stop()
 	for {
 		<-ticker.C
-		f.TaskManager(from, to, tt)
+		f.TaskManager(from, to, tt, config)
 	}
 
 }

@@ -37,8 +37,8 @@ func (l *Logger) ConfigureLogger(conf *config.Config) {
 }
 
 //InfoLog ...
-func (l *Logger) InfoLog(mes string) {
-	l.logger.Info(mes)
+func (l *Logger) InfoLog(mes string, tt string) {
+	l.logger.Info(mes + tt)
 }
 
 //ErrorLog ...
