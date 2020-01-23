@@ -2,7 +2,7 @@ create table "Files"(
     f_id bigserial not null primary key,
     f_parent int,
     f_name varchar,
-    f_area varchar,
+    f_area int,
     f_type int,
     f_hash varchar,
     f_size int,

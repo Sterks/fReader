@@ -1,1 +1,2 @@
 ALTER TABLE public."Files" ADD CONSTRAINT files_fk FOREIGN KEY (f_type) REFERENCES public."FilesTypes"(ft_id) ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE public."Files" ADD CONSTRAINT files_fr FOREIGN KEY (f_area) REFERENCES public."SourceRegions"(r_id) ON DELETE CASCADE ON UPDATE CASCADE;
