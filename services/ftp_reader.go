@@ -90,8 +90,29 @@ func (f *FtpReader) GetFileInfo(path string, rev bool, down bool, addDb bool, fr
 			if addDb == true {
 				if down == true {
 					if hashReader == true {
-						id := f.Db.CreateInfoFile(info, region, Hash, fullPath)
+						id := f.Db.LastID()
 						if id != 0 {
+							pathLocal := common.CreateFolder(f.config, id)
+
+							// stringID := strconv.Itoa(id)
+							nameFile := common.GenerateID(id)
+							buf := new(bytes.Buffer)
+							file, _ := os.Create(f.config.Directory.MainFolder + "/" + pathLocal + nameFile)
+							// file, _ := os.Create(f.config.FileDir + "/" + m + "/" + stringID)
+							defer file.Close()
+							infoBuf := io.TeeReader(buf, file)
+							err = client.Retrieve(fullPath, buf)
+							if err != nil {
+								log.Println(err)
+							}
+							var hasher = sha256.New()
+							_, err = io.Copy(hasher, infoBuf)
+							if err != nil {
+								log.Println(err)
+							}
+							Hash = hex.EncodeToString(hasher.Sum(nil))
+						} else {
+							id = 1
 							pathLocal := common.CreateFolder(f.config, id)
 
 							// stringID := strconv.Itoa(id)
@@ -113,6 +134,7 @@ func (f *FtpReader) GetFileInfo(path string, rev bool, down bool, addDb bool, fr
 							Hash = hex.EncodeToString(hasher.Sum(nil))
 						}
 						// fmt.Println(fullPath, Hash)
+						f.Db.CreateInfoFile(info, region, Hash, fullPath)
 					} else {
 						buf := new(bytes.Buffer)
 						err = client.Retrieve(fullPath, buf)

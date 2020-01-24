@@ -50,6 +50,9 @@ func (d *Database) CreateInfoFile(info os.FileInfo, region string, hash string, 
 	// filesTypes := d.database.Table("FileType")
 	d.database.LogMode(true)
 
+	var gf model.SourceRegions
+	d.database.Table("SourceRegions").Where("r_name = ?", region).Find(&gf)
+
 	checker := d.CheckExistFileDb(info, hash)
 	if checker != 0 {
 		var lf model.File
@@ -67,7 +70,7 @@ func (d *Database) CreateInfoFile(info os.FileInfo, region string, hash string, 
 		d.database.Table("Files")
 		d.database.Create(&model.File{
 			TName:                 info.Name(),
-			TArea:                 region,
+			TArea:                 gf.RID,
 			FileType:              fileType,
 			TType:                 fileType.FTID,
 			THash:                 hash,
@@ -77,12 +80,19 @@ func (d *Database) CreateInfoFile(info os.FileInfo, region string, hash string, 
 			TDateLastCheck:        time.Now(),
 			TFullpath:             fullpath,
 		}).Scan(&lastID)
-		d.logger.InfoLog("Файл успешно добавлен", lastID.TName)
+		d.logger.InfoLog("Файл успешно добавлен - ", lastID.TName)
 		return lastID.TID
 	} else {
 		fmt.Printf("Файл существует - %v\n", info.Name())
 		return 0
 	}
+}
+
+//LastID ...
+func (d *Database) LastID() int {
+	var ff model.File
+	d.database.Table("Files").Last(&ff)
+	return ff.TID
 }
 
 // CheckExistFileDb ...
