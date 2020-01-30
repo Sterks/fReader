@@ -13,5 +13,6 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/secsy/goftp v0.0.0-20190720192957-f31499d7c79a
 	github.com/sirupsen/logrus v1.4.2
+	github.com/streadway/amqp v0.0.0-20200108173154-1c71cc93ed71
 	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
 )

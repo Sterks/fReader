@@ -18,6 +18,7 @@ import (
 	"github.com/Sterks/FReader/db"
 	"github.com/Sterks/FReader/logger"
 	"github.com/Sterks/FReader/router"
+	"github.com/Sterks/FReader/services"
 
 	"github.com/secsy/goftp"
 )
@@ -29,6 +30,7 @@ type FtpReader struct {
 	Db     *db.Database
 	router *router.WebServer
 	logger *logger.Logger
+	amq    *services.ProducerMQ
 }
 
 // New инициализация сервера
@@ -39,6 +41,7 @@ func New(conf *config.Config) *FtpReader {
 		ftp:    &goftp.Client{},
 		router: &router.WebServer{},
 		logger: &logger.Logger{},
+		amq:    &services.ProducerMQ{},
 	}
 }
 
@@ -65,7 +68,7 @@ func (f *FtpReader) Start(config *config.Config) *FtpReader {
 		log.Printf("Проблемы с соединением - %v", err)
 	}
 	f.ftp = ftp
-
+	f.amq
 	f.logger.ConfigureLogger(config)
 	f.Db.OpenDatabase(config, f.logger)
 	f.logger.InfoLog("Сервис запускается ...", "")
