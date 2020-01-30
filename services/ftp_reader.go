@@ -19,7 +19,6 @@ import (
 	"github.com/Sterks/FReader/logger"
 	"github.com/Sterks/FReader/router"
 	"github.com/Sterks/FReader/services"
-
 	"github.com/secsy/goftp"
 )
 
@@ -40,7 +39,6 @@ func New(conf *config.Config) *FtpReader {
 		Db:     &db.Database{},
 		ftp:    &goftp.Client{},
 		router: &router.WebServer{},
-		logger: &logger.Logger{},
 		amq:    &services.ProducerMQ{},
 	}
 }
