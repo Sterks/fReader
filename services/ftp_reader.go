@@ -235,6 +235,7 @@ func (f *FtpReader) FirstChecherRegions() {
 	}
 }
 
+// CheckDownloder ...
 func (f *FtpReader) CheckDownloder(id int, client *goftp.Client, fullPath string) (string, []byte) {
 	// if id != 0 {
 	pathLocal := common.CreateFolder(f.config, id)
