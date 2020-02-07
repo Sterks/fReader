@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"path"
@@ -13,12 +14,12 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Sterks/FReader/amqp"
 	"github.com/Sterks/FReader/common"
 	"github.com/Sterks/FReader/config"
 	"github.com/Sterks/FReader/db"
 	"github.com/Sterks/FReader/logger"
 	"github.com/Sterks/FReader/router"
-	"github.com/Sterks/FReader/services"
 	"github.com/secsy/goftp"
 )
 
@@ -29,7 +30,7 @@ type FtpReader struct {
 	Db     *db.Database
 	router *router.WebServer
 	logger *logger.Logger
-	amq    *services.ProducerMQ
+	amq    *amqp.ProducerMQ
 }
 
 // New инициализация сервера
@@ -39,7 +40,8 @@ func New(conf *config.Config) *FtpReader {
 		Db:     &db.Database{},
 		ftp:    &goftp.Client{},
 		router: &router.WebServer{},
-		amq:    &services.ProducerMQ{},
+		logger: &logger.Logger{},
+		amq:    &amqp.ProducerMQ{},
 	}
 }
 
@@ -66,15 +68,15 @@ func (f *FtpReader) Start(config *config.Config) *FtpReader {
 		log.Printf("Проблемы с соединением - %v", err)
 	}
 	f.ftp = ftp
-	f.amq
 	f.logger.ConfigureLogger(config)
 	f.Db.OpenDatabase(config, f.logger)
+
 	f.logger.InfoLog("Сервис запускается ...", "")
 	return f
 }
 
 // GetFileInfo ...
-func (f *FtpReader) GetFileInfo(path string, rev bool, down bool, addDb bool, from time.Time, to time.Time, region string, hashReader bool) {
+func (f *FtpReader) GetFileInfo(path string, from time.Time, to time.Time, region string) {
 	fmt.Println(path)
 	client := f.ftp
 	Walk(client, path, func(fullPath string, info os.FileInfo, err error) error {
@@ -86,96 +88,24 @@ func (f *FtpReader) GetFileInfo(path string, rev bool, down bool, addDb bool, fr
 			return err
 		}
 
-		var Hash string
-		if rev == true {
-			if addDb == true {
-				if down == true {
-					if hashReader == true {
-						id := f.Db.LastID()
-						if id != 0 {
-							pathLocal := common.CreateFolder(f.config, id)
+		// var Hash string
 
-							// stringID := strconv.Itoa(id)
-							nameFile := common.GenerateID(id)
-							buf := new(bytes.Buffer)
-							file, _ := os.Create(f.config.Directory.MainFolder + "/" + pathLocal + nameFile)
-							// file, _ := os.Create(f.config.FileDir + "/" + m + "/" + stringID)
-							defer file.Close()
-							infoBuf := io.TeeReader(buf, file)
-							err = client.Retrieve(fullPath, buf)
-							if err != nil {
-								log.Println(err)
-							}
-							var hasher = sha256.New()
-							_, err = io.Copy(hasher, infoBuf)
-							if err != nil {
-								log.Println(err)
-							}
-							Hash = hex.EncodeToString(hasher.Sum(nil))
-						} else {
-							id = 1
-							pathLocal := common.CreateFolder(f.config, id)
-
-							// stringID := strconv.Itoa(id)
-							nameFile := common.GenerateID(id)
-							buf := new(bytes.Buffer)
-							file, _ := os.Create(f.config.Directory.MainFolder + "/" + pathLocal + nameFile)
-							// file, _ := os.Create(f.config.FileDir + "/" + m + "/" + stringID)
-							defer file.Close()
-							infoBuf := io.TeeReader(buf, file)
-							err = client.Retrieve(fullPath, buf)
-							if err != nil {
-								log.Println(err)
-							}
-							var hasher = sha256.New()
-							_, err = io.Copy(hasher, infoBuf)
-							if err != nil {
-								log.Println(err)
-							}
-							Hash = hex.EncodeToString(hasher.Sum(nil))
-						}
-						// fmt.Println(fullPath, Hash)
-						f.Db.CreateInfoFile(info, region, Hash, fullPath)
-					} else {
-						buf := new(bytes.Buffer)
-						err = client.Retrieve(fullPath, buf)
-						if err != nil {
-							log.Println(err)
-						}
-						var hasher = sha256.New()
-						_, err = io.Copy(hasher, buf)
-						if err != nil {
-							log.Println(err)
-						}
-						Hash = hex.EncodeToString(hasher.Sum(nil))
-						// fmt.Println(fullPath, Hash)
-					}
-				}
-			} else {
-				buf := new(bytes.Buffer)
-				err = client.Retrieve(fullPath, buf)
-				if err != nil {
-					log.Println(err)
-				}
-				var hasher = sha256.New()
-				_, err = io.Copy(hasher, buf)
-				if err != nil {
-					log.Println(err)
-				}
-				Hash = hex.EncodeToString(hasher.Sum(nil))
-				fmt.Println(fullPath, Hash)
-				return nil
-			}
-		} else {
-			fmt.Println(fullPath)
+		var hash string
+		res, hash := f.Db.CheckerExistFileDBNotHash(info)
+		if res == 0 {
+			id := f.Db.LastID()
+			var file []byte
+			hash, file = f.CheckDownloder(id, client, fullPath)
+			f.amq.PublishSend(f.config, "Files", file)
 		}
+		f.Db.CreateInfoFile(info, region, hash, fullPath)
 
 		return nil
-	}, rev, down, from, to, region, hashReader)
+	}, from, to, region)
 }
 
 // Walk Гуляем по диреториям
-func Walk(client *goftp.Client, root string, walkFn filepath.WalkFunc, rev bool, down bool, from time.Time, to time.Time, region string, hashReader bool) (ret error) {
+func Walk(client *goftp.Client, root string, walkFn filepath.WalkFunc, from time.Time, to time.Time, region string) (ret error) {
 	dirsToCheck := make(chan string, 100)
 
 	var workCount int32 = 1
@@ -281,7 +211,7 @@ func (f *FtpReader) TaskManager(from time.Time, to time.Time, typeFile string, c
 		// rootPath := "/fcs_regions"
 		rootPath := f.config.Directory.RootPath
 		pathServer := fmt.Sprintf("%s/%s/%s", rootPath, region, typeFile)
-		f.GetFileInfo(pathServer, true, true, true, from, to, region, true)
+		f.GetFileInfo(pathServer, from, to, region)
 	}
 	t2 := time.Now()
 	t3 := t2.Sub(t1)
@@ -303,4 +233,33 @@ func (f *FtpReader) FirstChecherRegions() {
 	if checkVal == "" {
 		f.GetListFolder()
 	}
+}
+
+func (f *FtpReader) CheckDownloder(id int, client *goftp.Client, fullPath string) (string, []byte) {
+	// if id != 0 {
+	pathLocal := common.CreateFolder(f.config, id)
+
+	nameFile := common.GenerateID(id)
+	buf := new(bytes.Buffer)
+	file, _ := os.Create(f.config.Directory.MainFolder + "/" + pathLocal + nameFile)
+	defer file.Close()
+	infoBuf := io.TeeReader(buf, file)
+	err := client.Retrieve(fullPath, buf)
+	if err != nil {
+		log.Println(err)
+	}
+	var hasher = sha256.New()
+	_, err = io.Copy(hasher, infoBuf)
+
+	if err != nil {
+		log.Println(err)
+	}
+	hash := hex.EncodeToString(hasher.Sum(nil))
+	fileRead, err2 := ioutil.ReadFile(f.config.Directory.MainFolder + "/" + pathLocal + nameFile)
+	if err2 != nil {
+		f.logger.ErrorLog("Не могу прочитать файл \n", err2)
+	}
+	return hash, fileRead
+	// }
+	// return "", nil
 }

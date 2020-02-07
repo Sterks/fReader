@@ -11,6 +11,7 @@ type Config struct {
 	MainSettings MainSettings
 	Directory    Directory
 	Tasks        Tasks
+	Rabbit       Rabbit
 }
 
 //MainSettings ...
@@ -29,6 +30,11 @@ type Directory struct {
 type Tasks struct {
 	Notifications int64 `toml:"notifications"`
 	Protocols     int64 `toml:"protocols"`
+}
+
+// Rabbit соединение для RabbitMQ
+type Rabbit struct {
+	ConnectRabbit string `toml:"connection_rabbit"`
 }
 
 // NewConf инициализация конфигурации

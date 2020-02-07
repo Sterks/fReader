@@ -95,6 +95,14 @@ func (d *Database) LastID() int {
 	return ff.TID
 }
 
+// CheckerExistFileDBNotHash ...
+func (d *Database) CheckerExistFileDBNotHash(file os.FileInfo) (int, string) {
+	var ff model.File
+	fmt.Printf("%v - %v - %v", file.Size(), file.Name(), file.ModTime())
+	d.database.Table("Files").Where("f_size = ? and f_name = ? and f_date_create_from_source = ?", file.Size(), file.Name(), file.ModTime()).Find(&ff)
+	return ff.TID, ff.THash
+}
+
 // CheckExistFileDb ...
 func (d *Database) CheckExistFileDb(file os.FileInfo, hash string) int {
 	var ff model.File
@@ -123,4 +131,14 @@ func (d *Database) AddRegionsDb(region string) {
 	reg.RDateCreate = time.Now()
 	reg.RDateUpdate = time.Now()
 	d.database.Table("SourceRegions").Create(&reg)
+}
+
+// FirstOrCreate Создать или получить
+func (d *Database) FirstOrCreate(region string) model.SourceRegions {
+	var reg model.SourceRegions
+	reg.RName = region
+	reg.RDateCreate = time.Now()
+	reg.RDateUpdate = time.Now()
+	d.database.Table("SourceRegions").Where("r_name = ?", region).FirstOrCreate(&reg)
+	return reg
 }

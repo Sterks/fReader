@@ -12,6 +12,7 @@ import (
 
 // GenerateID - Герерация строки длинной 12 символов
 func GenerateID(ident int) string {
+	ident = ident + 1
 	word := strconv.Itoa(ident)
 	ch := len(word)
 	nool := 12 - ch

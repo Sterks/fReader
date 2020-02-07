@@ -1,5 +1,5 @@
 create table "Files"(
-    f_id bigserial not null primary key,
+    f_id bigserial not null  primary key,
     f_parent int,
     f_name varchar,
     f_area int,
