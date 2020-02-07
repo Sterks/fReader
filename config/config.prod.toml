@@ -1,5 +1,5 @@
 [MainSettings]
-server_connect = "127.0.0.1:8000"
+server_connect = "0.0.0.0:8000"
 log_level = "debug"
 
 [Directory]
@@ -7,7 +7,7 @@ root_path = "/fcs_regions"
 main_folder = "./Files"
 
 [Tasks]
-notifications = 5
+notifications = 60
 protocols = 8
 
 [Rabbit]
