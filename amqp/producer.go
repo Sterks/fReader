@@ -65,7 +65,7 @@ func failOnError(err error, msg string) {
 }
 
 // PublishSend добавление записи в очередь
-func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQueue string, in []byte, id int) {
+func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQueue string, in []byte, id int, region string, fullpath string) {
 	conn, err := amqp.Dial(config.Rabbit.ConnectRabbit)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -99,6 +99,8 @@ func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQ
 		NameFile string
 		SizeFile int64
 		DateMode time.Time
+		Fullpath string
+		Region   string
 		FileZip  []byte
 	}
 
@@ -108,6 +110,8 @@ func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQ
 		NameFile: info.Name(),
 		FileZip:  in,
 		SizeFile: info.Size(),
+		Fullpath: fullpath,
+		Region:   region,
 	}
 
 	bodyJSON, err3 := json.Marshal(body)
