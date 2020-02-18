@@ -33,6 +33,8 @@ func mainRunner() {
 
 	go f.FirstChecherRegions()
 
+	go f.TaskManager(from, to, "protocols", config)
+	go f.TaskManager(from, to, "notifications", config)
 	// gocron.Every(1).Minute().Do(testText, f)
 
 	gocron.Every(1).Minute().Do(f.FirstChecherRegions, f)

@@ -14,10 +14,11 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/Sterks/Pp.Common.Db/db"
+
 	"github.com/Sterks/FReader/amqp"
 	"github.com/Sterks/FReader/common"
 	"github.com/Sterks/FReader/config"
-	"github.com/Sterks/FReader/db"
 	"github.com/Sterks/FReader/logger"
 	"github.com/Sterks/FReader/router"
 	"github.com/secsy/goftp"
@@ -95,8 +96,9 @@ func (f *FtpReader) GetFileInfo(path string, from time.Time, to time.Time, regio
 		if res == 0 {
 			id := f.Db.LastID()
 			var file []byte
+
 			hash, file = f.CheckDownloder(id, client, fullPath)
-			f.amq.PublishSend(f.config, "Files", file)
+			f.amq.PublishSend(f.config, info, "Files", file, id)
 		}
 		f.Db.CreateInfoFile(info, region, hash, fullPath)
 
@@ -256,6 +258,7 @@ func (f *FtpReader) CheckDownloder(id int, client *goftp.Client, fullPath string
 		log.Println(err)
 	}
 	hash := hex.EncodeToString(hasher.Sum(nil))
+
 	fileRead, err2 := ioutil.ReadFile(f.config.Directory.MainFolder + "/" + pathLocal + nameFile)
 	if err2 != nil {
 		f.logger.ErrorLog("Не могу прочитать файл \n", err2)

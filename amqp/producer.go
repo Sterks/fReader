@@ -1,9 +1,10 @@
 package amqp
 
 import (
-	"bytes"
-	"encoding/gob"
+	"encoding/json"
 	"log"
+	"os"
+	"time"
 
 	"github.com/Sterks/FReader/config"
 	"github.com/Sterks/FReader/logger"
@@ -57,41 +58,14 @@ func (pr *ProducerMQ) ChannelMQ(connect *amqp.Connection, nameQueue string) (amq
 	return q, channel
 }
 
-func (pr *ProducerMQ) PublishMQ(amq *amqp.Queue, ch *amqp.Channel) {
-	err := ch.Publish(
-		"",
-		amq.Name,
-		false,
-		false,
-		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte("Test"),
-		},
-	)
-	if err != nil {
-		log.Println(err)
-	}
-	log.Printf("[x] Sent %s", "TEST")
-}
-
 func failOnError(err error, msg string) {
 	if err != nil {
 		log.Fatalf("%s: %s", msg, err)
 	}
 }
 
-// PublishSender Отправитель
-func (pr *ProducerMQ) PublishSender() {
-	connect, err := pr.Connect()
-	if err != nil {
-		pr.logger.ErrorLog("Не могу соединиться с Rabbit", err)
-	}
-	ch, queue := pr.ChannelMQ(connect, "Add")
-	pr.PublishMQ(&ch, queue)
-}
-
 // PublishSend добавление записи в очередь
-func (pr *ProducerMQ) PublishSend(config *config.Config, nameQueue string, in interface{}) {
+func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQueue string, in []byte, id int) {
 	conn, err := amqp.Dial(config.Rabbit.ConnectRabbit)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -110,24 +84,46 @@ func (pr *ProducerMQ) PublishSend(config *config.Config, nameQueue string, in in
 	)
 	failOnError(err, "Failed to declare a queue")
 
-	var buf bytes.Buffer
-	enc := gob.NewEncoder(&buf)
-	err2 := enc.Encode(in)
-	if err != nil {
-		log.Println(err2)
-	}
-	kk := buf.Bytes()
+	// var buf bytes.Buffer
+	// enc := gob.NewEncoder(&buf)
+	// err2 := enc.Encode(in)
+	// if err != nil {
+	// 	log.Println(err2)
+	// }
+	// kk := buf.Bytes()
 
-	body := "Hello World!"
+	// body := "Hello World!"
+
+	type InformationFile struct {
+		FileID   int
+		NameFile string
+		SizeFile int64
+		DateMode time.Time
+		FileZip  []byte
+	}
+
+	body := &InformationFile{
+		FileID:   id,
+		DateMode: info.ModTime(),
+		NameFile: info.Name(),
+		FileZip:  in,
+		SizeFile: info.Size(),
+	}
+
+	bodyJSON, err3 := json.Marshal(body)
+	if err3 != nil {
+		log.Println(err3)
+	}
+
 	err = ch.Publish(
 		"",     // exchange
 		q.Name, // routing key
 		false,  // mandatory
 		false,  // immediate
 		amqp.Publishing{
-			ContentType: "text/plain",
-			Body:        []byte(kk),
+			ContentType: "application/json",
+			Body:        bodyJSON,
 		})
-	log.Printf(" [x] Sent %s", body)
+	log.Printf(" [x] Sent %s", body.NameFile)
 	failOnError(err, "Failed to publish a message")
 }
