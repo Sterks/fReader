@@ -97,7 +97,7 @@ func (f *FtpReader) GetFileInfo(path string, from time.Time, to time.Time, regio
 			id := f.Db.LastID()
 			var file []byte
 			hash, file = f.CheckDownloder(id, client, fullPath)
-			f.amq.PublishSend(f.config, info, "Files", file, id)
+			f.amq.PublishSend(f.config, info, "Files", file, id, region, fullPath)
 		}
 		f.Db.CreateInfoFile(info, region, hash, fullPath)
 
