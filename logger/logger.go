@@ -1,7 +1,7 @@
 package logger
 
 import (
-	"github.com/Sterks/FReader/config"
+	"github.com/Sterks/fReader/config"
 	"github.com/sirupsen/logrus"
 )
 

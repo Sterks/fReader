@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/Sterks/FReader/config"
+	"github.com/Sterks/fReader/config"
 	"github.com/sirupsen/logrus"
 )
 
