@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/Sterks/FReader/config"
-	"github.com/Sterks/FReader/router"
-	"github.com/Sterks/FReader/services"
+	"github.com/Sterks/fReader/config"
+	"github.com/Sterks/fReader/router"
+	"github.com/Sterks/fReader/services"
 	"github.com/jasonlvhit/gocron"
 )
 

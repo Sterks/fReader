@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/Sterks/FReader/config"
-	"github.com/Sterks/FReader/logger"
+	"github.com/Sterks/fReader/config"
+	"github.com/Sterks/fReader/logger"
 	"github.com/streadway/amqp"
 )
 

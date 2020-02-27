@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Sterks/FReader/config"
-	"github.com/Sterks/FReader/controllers"
+	"github.com/Sterks/fReader/config"
+	"github.com/Sterks/fReader/controllers"
 	"github.com/gorilla/mux"
 )
 

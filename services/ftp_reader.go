@@ -16,11 +16,11 @@ import (
 
 	"github.com/Sterks/Pp.Common.Db/db"
 
-	"github.com/Sterks/FReader/amqp"
-	"github.com/Sterks/FReader/common"
-	"github.com/Sterks/FReader/config"
-	"github.com/Sterks/FReader/logger"
-	"github.com/Sterks/FReader/router"
+	"github.com/Sterks/fReader/amqp"
+	"github.com/Sterks/fReader/common"
+	"github.com/Sterks/fReader/config"
+	"github.com/Sterks/fReader/logger"
+	"github.com/Sterks/fReader/router"
 	"github.com/secsy/goftp"
 )
 
