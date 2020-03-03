@@ -42,9 +42,9 @@ func (l *Logger) InfoLog(mes string, tt string) {
 }
 
 //ErrorLog ...
-func (l *Logger) ErrorLog(mes string, err error) {
-	l.logger.Errorf(mes, err)
-}
+//func (l *Logger) ErrorLog(mes string, err error) {
+//	l.logger.Errorf(mes, err)
+//}
 
 //DebugLog ...
 func (l *Logger) DebugLog(mes string) {

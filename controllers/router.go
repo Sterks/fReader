@@ -1,22 +1,21 @@
-package router
+package controllers
 
 import (
+	config2 "github.com/Sterks/fReader/config"
 	"log"
 	"net/http"
 
-	"github.com/Sterks/fReader/config"
-	"github.com/Sterks/fReader/controllers"
 	"github.com/gorilla/mux"
 )
 
 //WebServer ...
 type WebServer struct {
-	config *config.Config
+	config *config2.Config
 	router *mux.Router
 }
 
 // New ...
-func New(conf *config.Config) *WebServer {
+func New(conf *config2.Config) *WebServer {
 	return &WebServer{
 		router: mux.NewRouter(),
 		config: conf,
@@ -28,7 +27,7 @@ func (w *WebServer) StartWebServer() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", controllers.HomeController)
+	r.HandleFunc("/", w.HomeController)
 
 	srv := &http.Server{
 		Handler: r,

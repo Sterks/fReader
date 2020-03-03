@@ -6,7 +6,7 @@ import (
 )
 
 //HomeController ...
-func HomeController(w http.ResponseWriter, h *http.Request) {
+func (s *WebServer) HomeController(w http.ResponseWriter, h *http.Request) {
 	type ViewData struct {
 		Title string
 	}

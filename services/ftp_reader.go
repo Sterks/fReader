@@ -5,6 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"github.com/Sterks/fReader/controllers"
 	"io"
 	"io/ioutil"
 	"log"
@@ -20,7 +21,6 @@ import (
 	"github.com/Sterks/fReader/common"
 	"github.com/Sterks/fReader/config"
 	"github.com/Sterks/fReader/logger"
-	"github.com/Sterks/fReader/router"
 	"github.com/secsy/goftp"
 )
 
@@ -29,7 +29,7 @@ type FtpReader struct {
 	config *config.Config
 	ftp    *goftp.Client
 	Db     *db.Database
-	router *router.WebServer
+	router *controllers.WebServer
 	logger *logger.Logger
 	amq    *amqp.ProducerMQ
 }
@@ -40,7 +40,7 @@ func New(conf *config.Config) *FtpReader {
 		config: &config.Config{},
 		Db:     &db.Database{},
 		ftp:    &goftp.Client{},
-		router: &router.WebServer{},
+		router: &controllers.WebServer{},
 		logger: &logger.Logger{},
 		amq:    &amqp.ProducerMQ{},
 	}
@@ -260,7 +260,7 @@ func (f *FtpReader) CheckDownloder(id int, client *goftp.Client, fullPath string
 
 	fileRead, err2 := ioutil.ReadFile(f.config.Directory.MainFolder + "/" + pathLocal + nameFile)
 	if err2 != nil {
-		f.logger.ErrorLog("Не могу прочитать файл \n", err2)
+		log.Printf("Не могу прочитать файл \n", err2)
 	}
 	return hash, fileRead
 	// }

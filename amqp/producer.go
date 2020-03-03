@@ -39,7 +39,7 @@ func (pr *ProducerMQ) Connect() (*amqp.Connection, error) {
 func (pr *ProducerMQ) ChannelMQ(connect *amqp.Connection, nameQueue string) (amqp.Queue, *amqp.Channel) {
 	channel, err := connect.Channel()
 	if err != nil {
-		pr.logger.ErrorLog("Не могу создать канал - ", err)
+		log.Printf("Не могу создать канал - ", err)
 	}
 	defer channel.Close()
 
