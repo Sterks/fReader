@@ -70,7 +70,7 @@ func (f *FtpReader) Start(config *config.Config) *FtpReader {
 	}
 	f.ftp = ftp
 	f.logger.ConfigureLogger(config)
-	f.Db.OpenDatabase(config, f.logger)
+	f.Db.OpenDatabase()
 
 	f.logger.InfoLog("Сервис запускается ...", "")
 

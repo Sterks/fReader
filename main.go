@@ -21,15 +21,15 @@ func mainRunner() {
 	ftpreader := services.New(config2)
 	f := ftpreader.Start(config2)
 
-	//now := time.Now()
+	now := time.Now()
 
-	 str := "2020-03-06"
-	 from, _ := time.Parse(time.RFC3339, str)
-	 to := time.Now()
+	 //str := "2020-03-06"
+	 //from, _ := time.Parse(time.RFC3339, str)
+	 //to := time.Now()
 
-	//y, m, d := now.Date()
-	//from := time.Date(y, m, d, 0, 0, 0, 0, now.Location())
-	//to := time.Now()
+	y, m, d := now.Date()
+	from := time.Date(y, m, d, 0, 0, 0, 0, now.Location())
+	to := time.Now()
 	f.FirstChecherRegions()
 	go func() {
 		go f.TaskManager(from, to, "protocols", config2)
