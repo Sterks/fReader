@@ -78,7 +78,7 @@ func (f *FtpReader) Start(config *config.Config) *FtpReader {
 }
 
 // GetFileInfo ...
-func (f *FtpReader) GetFileInfo(path string, from time.Time, to time.Time, region string, file string) {
+func (f *FtpReader) GetFileInfo(path string, from time.Time, to time.Time, region string, fileTT string) {
 	fmt.Println(path)
 	client := f.ftp
 	Walk(client, path, func(fullPath string, info os.FileInfo, err error) error {
@@ -98,9 +98,9 @@ func (f *FtpReader) GetFileInfo(path string, from time.Time, to time.Time, regio
 			id := f.Db.LastID()
 			var file []byte
 			hash, file = f.CheckDownloder(id, client, fullPath)
-			f.amq.PublishSend(f.config, info, "Files", file, id, region, fullPath, file )
+			f.amq.PublishSend(f.config, info, "Files", file, id, region, fullPath, fileTT)
 		}
-		f.Db.CreateInfoFile(info, region, hash, fullPath, file)
+		f.Db.CreateInfoFile(info, region, hash, fullPath, fileTT)
 
 		return nil
 	}, from, to, region)
