@@ -73,11 +73,12 @@ func (f *FtpReader) Start(config *config.Config) *FtpReader {
 	f.Db.OpenDatabase(config, f.logger)
 
 	f.logger.InfoLog("Сервис запускается ...", "")
+
 	return f
 }
 
 // GetFileInfo ...
-func (f *FtpReader) GetFileInfo(path string, from time.Time, to time.Time, region string) {
+func (f *FtpReader) GetFileInfo(path string, from time.Time, to time.Time, region string, file string) {
 	fmt.Println(path)
 	client := f.ftp
 	Walk(client, path, func(fullPath string, info os.FileInfo, err error) error {
@@ -97,9 +98,9 @@ func (f *FtpReader) GetFileInfo(path string, from time.Time, to time.Time, regio
 			id := f.Db.LastID()
 			var file []byte
 			hash, file = f.CheckDownloder(id, client, fullPath)
-			f.amq.PublishSend(f.config, info, "Files", file, id, region, fullPath)
+			f.amq.PublishSend(f.config, info, "Files", file, id, region, fullPath, file )
 		}
-		f.Db.CreateInfoFile(info, region, hash, fullPath)
+		f.Db.CreateInfoFile(info, region, hash, fullPath, file)
 
 		return nil
 	}, from, to, region)
@@ -212,7 +213,7 @@ func (f *FtpReader) TaskManager(from time.Time, to time.Time, typeFile string, c
 		// rootPath := "/fcs_regions"
 		rootPath := f.config.Directory.RootPath
 		pathServer := fmt.Sprintf("%s/%s/%s", rootPath, region, typeFile)
-		f.GetFileInfo(pathServer, from, to, region)
+		f.GetFileInfo(pathServer, from, to, region, typeFile)
 	}
 	t2 := time.Now()
 	t3 := t2.Sub(t1)

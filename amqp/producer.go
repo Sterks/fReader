@@ -18,16 +18,8 @@ type ProducerMQ struct {
 	amqpMQ *amqp.Channel
 }
 
-func NewProducerMQ(config *config.Config) *ProducerMQ {
-	return &ProducerMQ{
-		am:     &amqp.Connection{},
-		config: config,
-		logger: &logger.Logger{},
-	}
-}
-
 func (pr *ProducerMQ) Connect() (*amqp.Connection, error) {
-	connectMQ, err := amqp.Dial("amqp://guest:guest@127.0.0.1:5672/")
+	connectMQ, err := amqp.Dial("rabbit://guest:guest@127.0.0.1:5672/")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -65,7 +57,7 @@ func failOnError(err error, msg string) {
 }
 
 // PublishSend добавление записи в очередь
-func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQueue string, in []byte, id int, region string, fullpath string) {
+func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQueue string, in []byte, id int, region string, fullpath string, file string) {
 	conn, err := amqp.Dial(config.Rabbit.ConnectRabbit)
 	failOnError(err, "Failed to connect to RabbitMQ")
 	defer conn.Close()
@@ -102,6 +94,7 @@ func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQ
 		Fullpath string
 		Region   string
 		FileZip  []byte
+		TypeFile string
 	}
 
 	body := &InformationFile{
@@ -112,6 +105,7 @@ func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQ
 		SizeFile: info.Size(),
 		Fullpath: fullpath,
 		Region:   region,
+		TypeFile: file,
 	}
 
 	bodyJSON, err3 := json.Marshal(body)
