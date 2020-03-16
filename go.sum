@@ -35,6 +35,12 @@ github.com/Sterks/Pp.Common.Db v0.1.8 h1:szmzsyWl5Ql3Pm1w/X/hnBtyyf7Wk08J9Vnkh6L
 github.com/Sterks/Pp.Common.Db v0.1.8/go.mod h1:46Ql7DeAzT1Wqg4ODU8deWihPViOqkzEqxwKX5zjExA=
 github.com/Sterks/Pp.Common.Db v0.2.3 h1:JmNWtw+rE9WQZahbikcbmoHl63tGOAi+opusbu6K1pU=
 github.com/Sterks/Pp.Common.Db v0.2.3/go.mod h1:46Ql7DeAzT1Wqg4ODU8deWihPViOqkzEqxwKX5zjExA=
+github.com/Sterks/Pp.Common.Db v0.2.4 h1:TIaKDCzCv2RwZJAI8lwWm96M2EA2urTCtoPeojcAlA0=
+github.com/Sterks/Pp.Common.Db v0.2.4/go.mod h1:46Ql7DeAzT1Wqg4ODU8deWihPViOqkzEqxwKX5zjExA=
+github.com/Sterks/Pp.Common.Db v0.2.5 h1:hSjEc21PqMW4aP6OByCuNO7Obxj3uctbtYW3tlXRm6g=
+github.com/Sterks/Pp.Common.Db v0.2.5/go.mod h1:46Ql7DeAzT1Wqg4ODU8deWihPViOqkzEqxwKX5zjExA=
+github.com/Sterks/Pp.Common.Db v0.2.6 h1:7Wvt0A/y+MXmd8kPV294ifTSTOry/bHT05TcSYQZ8EE=
+github.com/Sterks/Pp.Common.Db v0.2.6/go.mod h1:46Ql7DeAzT1Wqg4ODU8deWihPViOqkzEqxwKX5zjExA=
 github.com/Sterks/fReader v0.1.6/go.mod h1:EpUrRIWRgXe+YdMabIKolgNNyfFEblsFGjVhCcS+CMA=
 github.com/Sterks/fReader v0.2.0/go.mod h1:EpUrRIWRgXe+YdMabIKolgNNyfFEblsFGjVhCcS+CMA=
 github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc/go.mod h1:LOuyumcjzFXgccqObfd/Ljyb9UuFJ6TxHnclSeseNhc=

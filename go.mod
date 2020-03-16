@@ -5,7 +5,7 @@ go 1.13
 require (
 	cloud.google.com/go v0.37.4 // indirect
 	github.com/BurntSushi/toml v0.3.1
-	github.com/Sterks/Pp.Common.Db v0.2.3
+	github.com/Sterks/Pp.Common.Db v0.2.6
 	github.com/gin-gonic/gin v1.5.0
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/golang/protobuf v1.3.4 // indirect

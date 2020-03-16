@@ -1,1 +1,0 @@
-ALTER TABLE public."Files" DROP CONSTRAINT files_fk1;
