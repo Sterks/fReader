@@ -5,7 +5,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"github.com/Sterks/fReader/controllers"
+	router2 "github.com/Sterks/fReader/router"
 	"io"
 	"io/ioutil"
 	"log"
@@ -29,7 +29,7 @@ type FtpReader struct {
 	config *config.Config
 	ftp    *goftp.Client
 	Db     *db.Database
-	router *controllers.WebServer
+	router *router2.WebServer
 	logger *logger.Logger
 	amq    *amqp.ProducerMQ
 }
@@ -40,7 +40,7 @@ func New(conf *config.Config) *FtpReader {
 		config: &config.Config{},
 		Db:     &db.Database{},
 		ftp:    &goftp.Client{},
-		router: &controllers.WebServer{},
+		router: &router2.WebServer{},
 		logger: &logger.Logger{},
 		amq:    &amqp.ProducerMQ{},
 	}
@@ -71,9 +71,7 @@ func (f *FtpReader) Start(config *config.Config) *FtpReader {
 	f.ftp = ftp
 	f.logger.ConfigureLogger(config)
 	f.Db.OpenDatabase()
-
 	f.logger.InfoLog("Сервис запускается ...", "")
-
 	return f
 }
 
@@ -89,8 +87,6 @@ func (f *FtpReader) GetFileInfo(path string, from time.Time, to time.Time, regio
 			}
 			return err
 		}
-
-		// var Hash string
 
 		var hash string
 		res, hash := f.Db.CheckerExistFileDBNotHash(info)
@@ -203,7 +199,16 @@ func (f *FtpReader) GetListFolder() {
 }
 
 // TaskManager ...
-func (f *FtpReader) TaskManager(from time.Time, to time.Time, typeFile string, config *config.Config) {
+func (f *FtpReader) TaskManager(typeFile string, config *config.Config) {
+	//str := "2020-03-06"
+	//from, _ := time.Parse(time.RFC3339, str)
+	//to := time.Now()
+	now := time.Now()
+	y, m, d := now.Date()
+	from := time.Date(y, m, d, 0, 0, 0, 0, now.Location())
+	to := time.Now()
+	f.FirstChecherRegions()
+
 	f.config = config
 	f.logger.InfoLog("Запуск загрузки ", typeFile)
 	t1 := time.Now()

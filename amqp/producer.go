@@ -2,6 +2,7 @@ package amqp
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -76,6 +77,8 @@ func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQ
 	)
 	failOnError(err, "Failed to declare a queue")
 
+	qq, _ := ch.QueueInspect(nameQueue)
+	fmt.Println(qq.Messages)
 	// var buf bytes.Buffer
 	// enc := gob.NewEncoder(&buf)
 	// err2 := enc.Encode(in)
