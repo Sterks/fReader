@@ -1,1 +1,1 @@
-ALTER TABLE public."Files" DROP COLUMN f_source_regions_id;
+ALTER TABLE public."Files" DROP COLUMN f_source_resources_id;
