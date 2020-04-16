@@ -1,6 +1,8 @@
 <template>
   <div id="app">
     <div class="row">
+      <router-link to="/tasks">Перейти к Foo</router-link>
+      <router-view></router-view>
       <div class="col s12 m3">
         <div class="card blue-grey darken-1">
           <div class="card-content white-text">
@@ -11,8 +13,8 @@
             <p>Итого: {{total = notification + protocols}} </p>
           </div>
         </div>
+      
       </div>
-
     </div>
     <div class="row">
       <div class="card-body col s12 m3">
@@ -55,7 +57,7 @@
     },
     methods: {
       updateLastID () {
-        Axios.get(`http://192.168.1.101:8000/GetID`).then(response => {
+        Axios.get(`http://127.0.0.1:8000/GetID`).then(response => {
           this.lastID = response.data.LastID;
           this.notification = response.data.Notification;
           this.protocols = response.data.Protocols;
@@ -63,8 +65,6 @@
       },
       tasks () {
         Axios.post(`http://localhost`)
-
-
       }
       // showBlock () {
       //   // this.$el.className("card").style.transform = "rotate("+window.pageYOffset+"deg)"

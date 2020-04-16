@@ -1,1 +1,1 @@
--- DROP TABLE public."Tasks";
+DROP TABLE public."Tasks";
