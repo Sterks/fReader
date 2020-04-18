@@ -11,16 +11,14 @@ import (
 func main() {
 	mainRunner()
 }
-
-
+//TODO Изменять время каждый день
 
 func mainRunner() {
 	configPath := "config/config.prod.toml"
 	config2 := config.NewConf()
-	toml.DecodeFile(configPath, &config2)
+	_, _ = toml.DecodeFile(configPath, &config2)
 	ftpreader := services.New(config2)
 	f := ftpreader.Start(config2)
-
 
 	go func() {
 		go f.TaskManager("protocols", config2)
