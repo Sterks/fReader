@@ -4,11 +4,32 @@ log_level = "debug"
 
 [Directory]
 root_path = "/fcs_regions"
-main_folder = "D:/Files"
+main_folder = "/Storage"
 
 [Tasks]
-notifications = 5
-protocols = 8
+notifications44 = 30
+notifications223 = 29
+protocols44 = 8
+protocols223 = 11
 
 [Rabbit]
 connection_rabbit = "amqp://guest:guest@localhost:5672/"
+
+[FTPServer44]
+username = "free"
+password = "free"
+url44 = "ftp.zakupki.gov.ru:21"
+root_path = "/fcs_regions"
+
+[FTPServer223]
+username = "fz223free"
+password = "fz223free"
+url44 = "ftp.zakupki.gov.ru:21"
+root_path = "/out/published"
+
+[Postgres]
+host     = "localhost"
+port     = 5432
+user     = "user_ro"
+password = "4r2w3e1q"
+dbname   = "freader"

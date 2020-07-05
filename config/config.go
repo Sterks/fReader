@@ -12,6 +12,9 @@ type Config struct {
 	Directory    Directory
 	Tasks        Tasks
 	Rabbit       Rabbit
+	FTPServer44  FTPServer44
+	FTPServer223 FTPServer223
+	Postgres     Postgres
 }
 
 //MainSettings ...
@@ -28,13 +31,39 @@ type Directory struct {
 
 // Tasks ...
 type Tasks struct {
-	Notifications int64 `toml:"notifications"`
-	Protocols     int64 `toml:"protocols"`
+	Notifications44  int64 `toml:"notifications44"`
+	Notifications223 int64 `toml:"notifications223"`
+	Protocols44      int64 `toml:"protocols44"`
+	Protocols223     int64 `toml:"protocols223"`
 }
 
 // Rabbit соединение для RabbitMQ
 type Rabbit struct {
 	ConnectRabbit string `toml:"connection_rabbit"`
+}
+
+// FTPServer44 Настройки для FTP 44
+type FTPServer44 struct {
+	Username string `toml:"username"`
+	Password string `toml:"password"`
+	Url44    string `toml:"url44"`
+	RootPath string `toml:"root_path"`
+}
+
+type FTPServer223 struct {
+	Username string `toml:"username"`
+	Password string `toml:"password"`
+	Url223   string `toml:"url44"`
+	RootPath string `toml:"root_path"`
+}
+
+// Postgres настройки для подключения к базе данных
+type Postgres struct {
+	Host     string `toml:"host"`
+	Port     int    `toml:"port"`
+	User     string `toml:"user"`
+	Password string `toml:"password"`
+	DBName   string `toml:"dbname"`
 }
 
 // NewConf инициализация конфигурации
@@ -43,6 +72,10 @@ func NewConf() *Config {
 		MainSettings: MainSettings{},
 		Directory:    Directory{},
 		Tasks:        Tasks{},
+		Postgres:     Postgres{},
+		FTPServer223: FTPServer223{},
+		FTPServer44:  FTPServer44{},
+		Rabbit:       Rabbit{},
 	}
 }
 

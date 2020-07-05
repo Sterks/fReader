@@ -1,27 +1,34 @@
 package router
 
 import (
-	database "github.com/Sterks/Pp.Common.Db/db"
-	config2 "github.com/Sterks/fReader/config"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
+
+	database "github.com/Sterks/Pp.Common.Db/db"
+	config2 "github.com/Sterks/fReader/config"
+	"github.com/gin-gonic/gin"
 )
 
 //WebServer ...
 type WebServer struct {
 	config *config2.Config
-	rr *gin.Engine
-	db *database.Database
+	rr     *gin.Engine
+	db     *database.Database
 }
 
 type InfoForm struct {
-	TsName string `json:"ts_name"`
-	TsDataStart string `json:"ts_data_start"`
-	TsRunTimes string `json:"ts_run_times"`
-	TsComment string `json:"ts_comment"`
+	TsName      string `form:"ts_name"`
+	TsDataStart string `form:"ts_data_start"`
+	TsRunTimes  string `form:"ts_run_times"`
+	TsComment   string `form:"ts_comment"`
+}
+
+//DateCheck - Даты для передачи с формы
+type DateCheck struct {
+	From time.Time `form:"from"`
+	To   time.Time `form:"to"`
 }
 
 func NewWebServer(config *config2.Config, db *database.Database) *WebServer {
@@ -30,22 +37,23 @@ func NewWebServer(config *config2.Config, db *database.Database) *WebServer {
 
 func (web *WebServer) Start() {
 	r := gin.Default()
-
 	r.Use(Cors())
-
 	r.LoadHTMLGlob("views/*")
 	r.GET("/ping", func(c *gin.Context) {
 		lst := web.db.LastID()
 		c.JSON(200, gin.H{
 			"message": "pong",
-			"lastID": lst,
+			"lastID":  lst,
 		})
 	})
-	r.GET("/GetID", web.GetLastID )
+	r.GET("/GetID", web.GetLastID)
+	r.GET("/tasks", web.tasksGET)
 	r.POST("/tasks", web.tasks)
+	r.GET("/Info", web.Info)
+	r.POST("/Info", web.Info)
 	s := &http.Server{
-		Addr:           ":8000",
-		Handler:        r,
+		Addr:    ":8000",
+		Handler: r,
 		//ReadTimeout:    10 * time.Second,
 		//WriteTimeout:   10 * time.Second,
 		//MaxHeaderBytes: 1 << 20,
@@ -77,18 +85,44 @@ func (web *WebServer) GetLastID(c *gin.Context) {
 	notif := web.db.QuantityTypeDoc("notifications")
 	proto := web.db.QuantityTypeDoc("protocols")
 	c.JSON(http.StatusOK, gin.H{
-		"LastID": lastID,
+		"LastID":       lastID,
 		"Notification": notif,
-		"Protocols": proto,
+		"Protocols":    proto,
+	})
+}
+
+// Info метод для отображения сводной информации
+func (web *WebServer) Info(c *gin.Context) {
+	str := "2020-07-04"
+	from, _ := time.Parse(time.RFC3339, str)
+	to := time.Now()
+	notification44zip := web.db.CountDocument(from, to, 1, 1)
+	notification223zip := web.db.CountDocument(from, to, 3, 1)
+	protocol44zip := web.db.CountDocument(from, to, 2, 1)
+	protocol223zip := web.db.CountDocument(from, to, 4, 1)
+
+	notification44 := web.db.CountDocument(from, to, 1, 2)
+	notification223 := web.db.CountDocument(from, to, 3, 2)
+	protocol44 := web.db.CountDocument(from, to, 2, 2)
+	protocol223 := web.db.CountDocument(from, to, 4, 2)
+	c.JSON(http.StatusOK, gin.H{
+		"Notification44zip":  notification44zip,
+		"protocol44zip":      protocol44zip,
+		"Notification223zip": notification223zip,
+		"protocol223zip":     protocol223zip,
+		"Notification44":     notification44,
+		"protocol44":         protocol44,
+		"Notification223":    notification223,
+		"protocol223":        protocol223,
 	})
 }
 
 func (web *WebServer) tasks(c *gin.Context) {
 	var infof InfoForm
-	_ = c.BindJSON(&infof)
+	_ = c.ShouldBind(&infof)
 	layout := "2006-01-02"
 	tds := infof.TsDataStart
-	tsDataStart, err := time.Parse(layout , tds)
+	tsDataStart, err := time.Parse(layout, tds)
 	if err != nil {
 		log.Printf("Не могу превратить строку в дату - %v", err)
 	}
@@ -98,8 +132,9 @@ func (web *WebServer) tasks(c *gin.Context) {
 		log.Printf("Не могу превратить строку в целое число - %v", err)
 	}
 	web.db.CreateTask(infof.TsName, tsDataStart, tsRunTimes, infof.TsComment)
-	c.JSON(200, gin.H{
-		"message": "Запись успешно добавлена.",
-	})
+	c.HTML(200, "form.html", nil)
 }
 
+func (web *WebServer) tasksGET(c *gin.Context) {
+	c.HTML(200, "form.html", nil)
+}

@@ -5,7 +5,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	router2 "github.com/Sterks/fReader/router"
 	"io"
 	"io/ioutil"
 	"log"
@@ -25,36 +24,34 @@ import (
 )
 
 //FtpReader ...
-type FtpReader struct {
+type FtpReader44 struct {
 	config *config.Config
 	ftp    *goftp.Client
 	Db     *db.Database
-	router *router2.WebServer
 	logger *logger.Logger
 	amq    *amqp.ProducerMQ
 }
 
 // New инициализация сервера
-func New(conf *config.Config) *FtpReader {
-	return &FtpReader{
-		config: &config.Config{},
+func NewFtpReader44(conf *config.Config) *FtpReader44 {
+	return &FtpReader44{
+		config: conf,
 		Db:     &db.Database{},
 		ftp:    &goftp.Client{},
-		router: &router2.WebServer{},
 		logger: &logger.Logger{},
 		amq:    &amqp.ProducerMQ{},
 	}
 }
 
-//Connect конфигурирование ftpClienta
-func (f *FtpReader) Connect() (*goftp.Client, error) {
+//Connect44 конфигурирование ftpClienta
+func (f *FtpReader44) Connect44(user string, password string, hostname string) (*goftp.Client, error) {
 	ftpServ := goftp.Config{
-		User:     "free",
-		Password: "free",
+		User:     user,
+		Password: password,
 		// Logger:   os.Stderr,
 		Timeout: 3 * time.Minute,
 	}
-	c, err := goftp.DialConfig(ftpServ, "ftp.zakupki.gov.ru:21")
+	c, err := goftp.DialConfig(ftpServ, hostname)
 	if err != nil {
 		return nil, err
 	}
@@ -62,9 +59,12 @@ func (f *FtpReader) Connect() (*goftp.Client, error) {
 	return c, nil
 }
 
-// Start ...
-func (f *FtpReader) Start(config *config.Config) *FtpReader {
-	ftp, err := f.Connect()
+// Start44 ...
+func (f *FtpReader44) Start44(config *config.Config) *FtpReader44 {
+	ftp, err := f.Connect44(
+		config.FTPServer44.Username,
+		config.FTPServer44.Password,
+		config.FTPServer44.Url44)
 	if err != nil {
 		log.Printf("Проблемы с соединением - %v", err)
 	}
@@ -76,7 +76,7 @@ func (f *FtpReader) Start(config *config.Config) *FtpReader {
 }
 
 // GetFileInfo ...
-func (f *FtpReader) GetFileInfo(path string, from time.Time, to time.Time, region string, fileTT string) {
+func (f *FtpReader44) GetFileInfo(path string, from time.Time, to time.Time, region string, fileTT string) {
 	fmt.Println(path)
 	client := f.ftp
 	Walk(client, path, func(fullPath string, info os.FileInfo, err error) error {
@@ -94,9 +94,13 @@ func (f *FtpReader) GetFileInfo(path string, from time.Time, to time.Time, regio
 			id := f.Db.LastID()
 			var file []byte
 			hash, file = f.CheckDownloder(id, client, fullPath)
-			f.amq.PublishSend(f.config, info, "Files", file, id, region, fullPath, fileTT)
+			if fileTT == "notifications44" {
+				f.amq.PublishSend(f.config, info, "Notifications44", file, id, region, fullPath, fileTT)
+			} else {
+				f.amq.PublishSend(f.config, info, "Protocols44", file, id, region, fullPath, fileTT)
+			}
 		}
-		f.Db.CreateInfoFile(info, region, hash, fullPath, fileTT)
+		f.Db.CreateInfoFile(info, region, hash, fullPath, fileTT, fileTT)
 
 		return nil
 	}, from, to, region)
@@ -150,7 +154,7 @@ func Walk(client *goftp.Client, root string, walkFn filepath.WalkFunc, from time
 }
 
 // GetListFolderFtp ...
-func (f *FtpReader) GetListFolderFtp() []string {
+func (f *FtpReader44) GetListFolderFtp() []string {
 	// rootPath := "/fcs_regions"
 	rootPath := f.config.Directory.RootPath
 	var listFolder []os.FileInfo
@@ -170,11 +174,11 @@ func (f *FtpReader) GetListFolderFtp() []string {
 }
 
 //GetListFolderDb ....
-func (f *FtpReader) GetListFolderDb() []string {
+func (f *FtpReader44) GetListFolderDb() []string {
 	var listFolder []string
 	listRegDb := f.Db.ReaderRegionsDb()
 	for _, value := range listRegDb {
-		if value.RID != 0 {
+		if value.RID != 0 && value.RFZLaw == 1 {
 			listFolder = append(listFolder, value.RName)
 		}
 	}
@@ -182,8 +186,8 @@ func (f *FtpReader) GetListFolderDb() []string {
 }
 
 //GetListFolder ...
-func (f *FtpReader) GetListFolder() {
-	rootPath := "/fcs_regions"
+func (f *FtpReader44) GetListFolder() {
+	rootPath := f.config.FTPServer44.RootPath
 	listFolder, err := f.ftp.ReadDir(rootPath)
 	if err != nil {
 		log.Printf("Не удается подключиться к FTP серверу - ошибка %v", err)
@@ -191,34 +195,43 @@ func (f *FtpReader) GetListFolder() {
 	for _, value := range listFolder {
 		if value.IsDir() == true {
 			if f.Db.CheckRegionsDb(value.Name()) == 0 {
-				f.Db.AddRegionsDb(value.Name())
+				f.Db.AddRegionsDb(value.Name(), "44 ФЗ")
 				fmt.Printf("Добавлен регион %v\n", value.Name())
 			}
 		}
 	}
+	fmt.Println("Наличие новых регионов проверено")
 }
 
 // TaskManager ...
-func (f *FtpReader) TaskManager(typeFile string, config *config.Config) {
-	//str := "2020-03-06"
-	//from, _ := time.Parse(time.RFC3339, str)
-	//to := time.Now()
-	now := time.Now()
-	y, m, d := now.Date()
-	from := time.Date(y, m, d, 0, 0, 0, 0, now.Location())
+func (f *FtpReader44) TaskManager(typeFile string, config *config.Config) {
+	str := "2020-07-04"
+	from, _ := time.Parse(time.RFC3339, str)
 	to := time.Now()
+	// now := time.Now()
+	// y, m, d := now.Date()
+	// from := time.Date(y, m, d, 0, 0, 0, 0, now.Location())
+	// to := time.Now()
 	f.FirstChecherRegions()
 
 	f.config = config
 	f.logger.InfoLog("Запуск загрузки ", typeFile)
 	t1 := time.Now()
 
+	//Проверяем есть ли в базе записи о директориях
 	listRegions := f.GetListFolderDb()
 	for _, region := range listRegions {
 		// rootPath := "/fcs_regions"
-		rootPath := f.config.Directory.RootPath
-		pathServer := fmt.Sprintf("%s/%s/%s", rootPath, region, typeFile)
-		f.GetFileInfo(pathServer, from, to, region, typeFile)
+		rootPath := f.config.FTPServer44.RootPath
+		if typeFile == "notifications44" {
+			gg := "notifications"
+			pathServer := fmt.Sprintf("%s/%s/%s", rootPath, region, gg)
+			f.GetFileInfo(pathServer, from, to, region, typeFile)
+		} else if typeFile == "protocols44" {
+			gg := "protocols"
+			pathServer := fmt.Sprintf("%s/%s/%s", rootPath, region, gg)
+			f.GetFileInfo(pathServer, from, to, region, typeFile)
+		}
 	}
 	t2 := time.Now()
 	t3 := t2.Sub(t1)
@@ -227,7 +240,7 @@ func (f *FtpReader) TaskManager(typeFile string, config *config.Config) {
 }
 
 //FirstChecherRegions ...
-func (f *FtpReader) FirstChecherRegions() {
+func (f *FtpReader44) FirstChecherRegions() {
 	var checkVal string
 	listFolder := f.GetListFolderDb()
 	for _, value := range listFolder {
@@ -243,7 +256,7 @@ func (f *FtpReader) FirstChecherRegions() {
 }
 
 // CheckDownloder ...
-func (f *FtpReader) CheckDownloder(id int, client *goftp.Client, fullPath string) (string, []byte) {
+func (f *FtpReader44) CheckDownloder(id int, client *goftp.Client, fullPath string) (string, []byte) {
 	// if id != 0 {
 	pathLocal := common.CreateFolder(f.config, id)
 
