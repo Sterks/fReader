@@ -16,19 +16,6 @@ func main() {
 	// secondRunner()
 }
 
-func secondRunner() {
-	// Подключаем конфиг
-	configPath := "config/config.prod.toml"
-	config := config.NewConf()
-	toml.DecodeFile(configPath, &config)
-
-	// Проверяем работу базы и подключаем ее
-	connectDB := repository.NewRepository(config)
-	connectDB.DatabaseOpen()
-	tasks := connectDB.AllTasks()
-	fmt.Println(tasks)
-}
-
 //TODO Изменять время каждый день
 
 func mainRunner() {
