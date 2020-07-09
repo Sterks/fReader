@@ -32,7 +32,7 @@ type FtpReader44 struct {
 	amq    *amqp.ProducerMQ
 }
 
-// New инициализация сервера
+// NewFtpReader44 инициализация сервера
 func NewFtpReader44(conf *config.Config) *FtpReader44 {
 	return &FtpReader44{
 		config: conf,
@@ -205,13 +205,13 @@ func (f *FtpReader44) GetListFolder() {
 
 // TaskManager ...
 func (f *FtpReader44) TaskManager(typeFile string, config *config.Config) {
-	str := "2020-07-04"
-	from, _ := time.Parse(time.RFC3339, str)
-	to := time.Now()
-	// now := time.Now()
-	// y, m, d := now.Date()
-	// from := time.Date(y, m, d, 0, 0, 0, 0, now.Location())
+	// str := "2020-07-04"
+	// from, _ := time.Parse(time.RFC3339, str)
 	// to := time.Now()
+	now := time.Now()
+	y, m, d := now.Date()
+	from := time.Date(y, m, d, 0, 0, 0, 0, now.Location())
+	to := time.Now()
 	f.FirstChecherRegions()
 
 	f.config = config

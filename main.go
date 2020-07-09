@@ -1,11 +1,8 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/BurntSushi/toml"
 	"github.com/Sterks/fReader/config"
-	"github.com/Sterks/fReader/repository"
 	"github.com/Sterks/fReader/router"
 	"github.com/Sterks/fReader/services"
 	"github.com/jasonlvhit/gocron"
