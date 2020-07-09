@@ -58,9 +58,12 @@ func (web *WebServer) Start() {
 		//WriteTimeout:   10 * time.Second,
 		//MaxHeaderBytes: 1 << 20,
 	}
-	_ = s.ListenAndServe()
+	if err := s.ListenAndServe(); err != nil {
+		log.Printf("Не запускается веб сервер - %v", err)
+	}
 }
 
+// Cors ...
 func Cors() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		method := c.Request.Method
