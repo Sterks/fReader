@@ -18,6 +18,7 @@ type WebServer struct {
 	db     *database.Database
 }
 
+// InfoForm ...
 type InfoForm struct {
 	TsName      string `form:"ts_name"`
 	TsDataStart string `form:"ts_data_start"`
@@ -31,14 +32,16 @@ type DateCheck struct {
 	To   time.Time `form:"to"`
 }
 
+// NewWebServer ...
 func NewWebServer(config *config2.Config, db *database.Database) *WebServer {
 	return &WebServer{config: config, rr: &gin.Engine{}, db: db}
 }
 
+// Start ...
 func (web *WebServer) Start() {
 	r := gin.Default()
 	r.Use(Cors())
-	r.LoadHTMLGlob("views/*")
+	r.LoadHTMLGlob("./views/*")
 	r.GET("/ping", func(c *gin.Context) {
 		lst := web.db.LastID()
 		c.JSON(200, gin.H{
