@@ -33,6 +33,7 @@
 
 <script>
     import M from 'materialize-css/dist/js/materialize.js'
+
     document.addEventListener('DOMContentLoaded', function() {
         document.querySelectorAll('.datepicker');
         M.Datepicker.init();

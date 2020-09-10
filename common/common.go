@@ -2,9 +2,14 @@ package common
 
 import (
 	"fmt"
+	"github.com/secsy/goftp"
 	"log"
 	"os"
+	"path"
+	"path/filepath"
 	"strconv"
+	"sync/atomic"
+	"time"
 
 	"github.com/Sterks/fReader/config"
 	"github.com/sirupsen/logrus"
@@ -12,7 +17,6 @@ import (
 
 // GenerateID - Герерация строки длинной 12 символов
 func GenerateID(ident int) string {
-	ident = ident + 1
 	word := strconv.Itoa(ident)
 	ch := len(word)
 	nool := 12 - ch
@@ -25,7 +29,7 @@ func GenerateID(ident int) string {
 }
 
 //PathLocalFile Путь до файла на файловой системе
-func PathLocalFile(config config.Config, id int) string {
+func PathLocalFile(config *config.Config, id int) string {
 	stringID := GenerateID(id)
 	lv1 := fmt.Sprint(stringID[0:3])
 	lv2 := fmt.Sprint(stringID[3:6])
@@ -71,4 +75,50 @@ func GetLocalPath(config *config.Config, ident int) string {
 	lv3 := fmt.Sprint(stringID[6:9])
 	s := fmt.Sprint(rootPath + "/" + lv1 + "/" + lv2 + "/" + lv3 + "/" + word)
 	return s
+}
+
+// Walk Гуляем по диреториям
+func Walk(client *goftp.Client, root string, walkFn filepath.WalkFunc, from time.Time, to time.Time) (ret error) {
+	dirsToCheck := make(chan string, 100)
+
+	var workCount int32 = 1
+	dirsToCheck <- root
+
+	for dir := range dirsToCheck {
+		go func(dir string) {
+			files, err := client.ReadDir(dir)
+
+			if err != nil {
+				if err = walkFn(dir, nil, err); err != nil && err != filepath.SkipDir {
+					ret = err
+					close(dirsToCheck)
+					return
+				}
+			}
+
+			for _, file := range files {
+				if file.ModTime().After(from) && file.ModTime().Before(to) && file.IsDir() == false {
+					if err = walkFn(path.Join(dir, file.Name()), file, nil); err != nil {
+						if file.IsDir() && err == filepath.SkipDir {
+							continue
+						}
+						ret = err
+						close(dirsToCheck)
+						return
+					}
+				}
+
+				if file.IsDir() {
+					atomic.AddInt32(&workCount, 1)
+					dirsToCheck <- path.Join(dir, file.Name())
+				}
+			}
+
+			atomic.AddInt32(&workCount, -1)
+			if workCount == 0 {
+				close(dirsToCheck)
+			}
+		}(dir)
+	}
+	return ret
 }

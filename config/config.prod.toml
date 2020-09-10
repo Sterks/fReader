@@ -4,11 +4,11 @@ log_level = "debug"
 
 [Directory]
 root_path = "/fcs_regions"
-main_folder = "/Storage"
+main_folder = "F:/Files"
 
 [Tasks]
-notifications44 = 30
-notifications223 = 29
+notifications44 = 1
+notifications223 = 1
 protocols44 = 8
 protocols223 = 11
 

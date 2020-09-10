@@ -6,7 +6,7 @@ import HelloWorld from './components/HelloWorld'
 import 'materialize-css/dist/css/materialize.css'
 import 'materialize-css/dist/js/materialize.js'
 import VueRouter from 'vue-router'
-import Tasks from  './components/Tasks'
+import Tasks from './components/Tasks'
 import NewFile from './components/Tasks'
 
 Vue.use(VueRouter);

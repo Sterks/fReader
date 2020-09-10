@@ -8,6 +8,7 @@ import (
 
 	database "github.com/Sterks/Pp.Common.Db/db"
 	config2 "github.com/Sterks/fReader/config"
+	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,6 +41,7 @@ func NewWebServer(config *config2.Config, db *database.Database) *WebServer {
 // Start ...
 func (web *WebServer) Start() {
 	r := gin.Default()
+	pprof.Register(r, "dev/pprof")
 	r.Use(Cors())
 	r.LoadHTMLGlob("./views/*")
 	r.GET("/ping", func(c *gin.Context) {
@@ -55,7 +57,7 @@ func (web *WebServer) Start() {
 	r.GET("/Info", web.Info)
 	r.POST("/Info", web.Info)
 	s := &http.Server{
-		Addr:    ":8000",
+		Addr:    ":8080",
 		Handler: r,
 		//ReadTimeout:    10 * time.Second,
 		//WriteTimeout:   10 * time.Second,
