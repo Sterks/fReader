@@ -1,11 +1,11 @@
 module github.com/Sterks/fReader
 
-go 1.13
+go 1.15
 
 require (
 	cloud.google.com/go v0.65.0 // indirect
 	github.com/BurntSushi/toml v0.3.1
-	github.com/Sterks/Pp.Common.Db v0.5.8
+	github.com/Sterks/Pp.Common.Db v0.6.1
 	github.com/gin-contrib/pprof v1.3.0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-playground/validator/v10 v10.3.0 // indirect
@@ -24,7 +24,8 @@ require (
 	github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4
 	github.com/sirupsen/logrus v1.6.0
 	github.com/streadway/amqp v1.0.0
-	golang.org/x/sys v0.0.0-20200909081042-eff7692f9009 // indirect
+	github.com/ugorji/go v1.1.8 // indirect
+	golang.org/x/sys v0.0.0-20200917073148-efd3b9a0ff20 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/check.v1 v1.0.0-20200902074654-038fdea0a05b // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect

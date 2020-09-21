@@ -2,8 +2,6 @@ package amqp
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -12,62 +10,40 @@ import (
 	"github.com/streadway/amqp"
 )
 
+// ProducerMQ Структура отправителя
 type ProducerMQ struct {
-	am     *amqp.Connection
-	config *config.Config
-	logger *logger.Logger
-	amqpMQ *amqp.Channel
+	Am     *amqp.Connection
+	Config *config.Config
+	Logger *logger.Logger
+	AmqpMQ *amqp.Channel
 }
 
-func (pr *ProducerMQ) Connect() (*amqp.Connection, error) {
-	connectMQ, err := amqp.Dial("rabbit://guest:guest@127.0.0.1:5672/")
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	pr.am = connectMQ
-	return connectMQ, nil
-}
-
-func (pr *ProducerMQ) ChannelMQ(connect *amqp.Connection, nameQueue string) (amqp.Queue, *amqp.Channel) {
-	channel, err := connect.Channel()
-	if err != nil {
-		log.Printf("Не могу создать канал - ", err)
-	}
-	defer channel.Close()
-
-	q, err := channel.QueueDeclare(
-		nameQueue,
-		false,
-		false,
-		false,
-		false,
-		nil,
-	)
-	if err != nil {
-		log.Println(err)
-	}
-	pr.amqpMQ = channel
-	return q, channel
-}
-
-func failOnError(err error, msg string) {
-	if err != nil {
-		log.Fatalf("%s: %s", msg, err)
+// ProducerMQNew ...
+func ProducerMQNew() *ProducerMQ {
+	return &ProducerMQ{
+		Am:     &amqp.Connection{},
+		Config: &config.Config{},
+		Logger: &logger.Logger{},
+		AmqpMQ: &amqp.Channel{},
 	}
 }
 
 // PublishSend добавление записи в очередь
 func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQueue string, in []byte, id int, region string, fullpath string, file string) {
 	conn, err := amqp.Dial(config.Rabbit.ConnectRabbit)
-	failOnError(err, "Failed to connect to RabbitMQ")
+	if err != nil {
+		pr.Logger.ErrorLog("Failed to connect to RabbitMQ", err, "amqp.Dial()")
+	}
+
 	defer conn.Close()
 
-	ch, err := conn.Channel()
-	failOnError(err, "Failed to open a channel")
+	ch, err2 := conn.Channel()
+	if err2 != nil {
+		pr.Logger.ErrorLog("Failed to open a channel", err2, "conn.Channel()")
+	}
 	defer ch.Close()
 
-	q, err := ch.QueueDeclare(
+	q, err3 := ch.QueueDeclare(
 		nameQueue, // name
 		false,     // durable
 		false,     // delete when unused
@@ -75,19 +51,9 @@ func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQ
 		false,     // no-wait
 		nil,       // arguments
 	)
-	failOnError(err, "Failed to declare a queue")
-
-	qq, _ := ch.QueueInspect(nameQueue)
-	fmt.Println(qq.Messages)
-	// var buf bytes.Buffer
-	// enc := gob.NewEncoder(&buf)
-	// err2 := enc.Encode(in)
-	// if err != nil {
-	// 	log.Println(err2)
-	// }
-	// kk := buf.Bytes()
-
-	// body := "Hello World!"
+	if err3 != nil {
+		pr.Logger.ErrorLog("Failed to declare a queue", err3, "ch.QueueDeclare(")
+	}
 
 	type InformationFile struct {
 		FileID   int
@@ -111,12 +77,12 @@ func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQ
 		TypeFile: file,
 	}
 
-	bodyJSON, err3 := json.Marshal(body)
-	if err3 != nil {
-		log.Println(err3)
+	bodyJSON, err4 := json.Marshal(body)
+	if err4 != nil {
+		pr.Logger.ErrorLog("Не могу преобразовать в JSON", err4)
 	}
 
-	err = ch.Publish(
+	if err5 := ch.Publish(
 		"",     // exchange
 		q.Name, // routing key
 		false,  // mandatory
@@ -124,7 +90,8 @@ func (pr *ProducerMQ) PublishSend(config *config.Config, info os.FileInfo, nameQ
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        bodyJSON,
-		})
-	log.Printf(" [x] Sent %s", body.NameFile)
-	failOnError(err, "Failed to publish a message")
+		}); err5 != nil {
+		pr.Logger.ErrorLog("Failed to publish a message", err5)
+	}
+	pr.Logger.InfoLog("[x] Sent -", body.NameFile)
 }

@@ -8,6 +8,7 @@ import (
 
 	database "github.com/Sterks/Pp.Common.Db/db"
 	config2 "github.com/Sterks/fReader/config"
+	"github.com/Sterks/fReader/logger"
 	"github.com/gin-contrib/pprof"
 	"github.com/gin-gonic/gin"
 )
@@ -17,6 +18,7 @@ type WebServer struct {
 	config *config2.Config
 	rr     *gin.Engine
 	db     *database.Database
+	Logger *logger.Logger
 }
 
 // InfoForm ...
@@ -35,11 +37,12 @@ type DateCheck struct {
 
 // NewWebServer ...
 func NewWebServer(config *config2.Config, db *database.Database) *WebServer {
-	return &WebServer{config: config, rr: &gin.Engine{}, db: db}
+	return &WebServer{config: config, rr: &gin.Engine{}, db: db, Logger: logger.NewLogger()}
 }
 
 // Start ...
 func (web *WebServer) Start() {
+	web.Logger.ConfigureLogger(web.config)
 	r := gin.Default()
 	pprof.Register(r, "dev/pprof")
 	r.Use(Cors())
@@ -64,7 +67,7 @@ func (web *WebServer) Start() {
 		//MaxHeaderBytes: 1 << 20,
 	}
 	if err := s.ListenAndServe(); err != nil {
-		log.Printf("Не запускается веб сервер - %v", err)
+		web.Logger.ErrorLog("Не запускается веб сервер", err)
 	}
 }
 

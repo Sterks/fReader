@@ -24,13 +24,14 @@ func mainRunner() {
 
 	c := cron.New()
 	fz223Notification := services.NewFtpReader223(conf)
-	// services.StartService223(fz223Notification, conf, "protocols223")
-	_, _ = c.AddFunc("*/30 * * * *", func() { services.StartService223(fz223Notification, conf, "notifications223") })
-	_, _ = c.AddFunc("*/60 * * * *", func() { services.StartService223(fz223Notification, conf, "protocols223") })
-
 	fz44Notification := services.NewFtpReader44(conf)
-	_, _ = c.AddFunc("*/20 * * * *", func() { services.StartService(fz44Notification, conf, "notifications44") })
-	_, _ = c.AddFunc("*/25 * * * *", func() { services.StartService(fz44Notification, conf, "protocols44") })
+	go services.StartService(fz44Notification, conf, "notifications44")
+	// services.StartService223(fz223Notification, conf, "protocols223")
+	_, _ = c.AddFunc("*/29 * * * *", func() { services.StartService223(fz223Notification, conf, "notifications223") })
+	_, _ = c.AddFunc("*/30 * * * *", func() { services.StartService223(fz223Notification, conf, "protocols223") })
+
+	_, _ = c.AddFunc("*/24 * * * *", func() { services.StartService(fz44Notification, conf, "notifications44") })
+	_, _ = c.AddFunc("*/20 * * * *", func() { services.StartService(fz44Notification, conf, "protocols44") })
 	c.Start()
 
 	s := router.NewWebServer(conf, fz44Notification.Db)

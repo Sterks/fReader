@@ -11,6 +11,8 @@ services:
       NAME: "rabbitmq"
     volumes:
       - ./config/rabbitmq-isolated.conf:/etc/rabbitmq/rabbitmq.config
+    networks:
+      - db-network
 
   mongodb:
     image: "mongo:latest"
@@ -23,6 +25,9 @@ services:
       - "27017-27019:27017-27019"
     volumes:
       - mongodb_data_container:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - db-network
 
   Postgres:
     image: postgres
@@ -38,9 +43,37 @@ services:
       - POSTGRES_DB=freader
     ports:
       - "5432:5432"
+  
+  freader:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+      - mongodb
+      - Postgres
+    networks:
+      - db-network
+    volumes:
+      - "files_data:/Files"
+    ports:
+      - "8080:8080"
+  
+  unzipper:
+    build:
+      context: ../rXmlReader
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+      - mongodb
+      - Postgres
+      - freader
+    networks:
+      - db-network
+
 networks:
   db-network:
-    driver: bridge
 volumes:
   postgres_data:
   mongodb_data_container:
+  files_data:

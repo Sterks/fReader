@@ -1,20 +1,11 @@
-# build stage
-FROM golang as builder
+FROM golang:latest as builder
 
-ENV GO111MODULE=on
-
-ADD . /app
 WORKDIR /app
+ADD . /app
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main
 
-COPY go.mod .
-COPY go.sum .
-
-RUN go mod download
-
-COPY . .
-
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
-
-
+FROM alpine:latest AS production
+WORKDIR /app
+COPY --from=builder /app .
 EXPOSE 8080
-ENTRYPOINT ["/app/fReader"]
+CMD ["./main"]

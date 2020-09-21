@@ -21,12 +21,11 @@ func NewLogger() *Logger {
 
 // ConfigureLogger ....
 func (l *Logger) ConfigureLogger(conf *config.Config) {
-	logr := logrus.New()
-	l.logger = logr
+	l.logger = logrus.New()
 	cc := conf.MainSettings.LogLevel
 	c, err := logrus.ParseLevel(cc)
 	if err != nil {
-		l.logger.Errorf("Ошибка %v", err)
+		l.logger.Errorln("Ошибка ", err)
 	}
 	l.logger.SetLevel(c)
 	customFormat := new(logrus.TextFormatter)
@@ -37,16 +36,16 @@ func (l *Logger) ConfigureLogger(conf *config.Config) {
 }
 
 //InfoLog ...
-func (l *Logger) InfoLog(mes string, tt string) {
-	l.logger.Info(mes + tt)
+func (l *Logger) InfoLog(args ...interface{}) {
+	l.logger.Infoln(args...)
 }
 
 //ErrorLog ...
-func (l *Logger) ErrorLog(mes string, err error) {
-	l.logger.Errorf(mes, err)
+func (l *Logger) ErrorLog(args ...interface{}) {
+	l.logger.Errorln(args...)
 }
 
 //DebugLog ...
-func (l *Logger) DebugLog(mes string) {
-	l.logger.Debug(mes)
+func (l *Logger) DebugLog(args ...interface{}) {
+	l.logger.Debugln(args...)
 }
