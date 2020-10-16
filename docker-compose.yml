@@ -74,6 +74,18 @@ services:
     networks:
       - db-network
 
+  rxml:
+    build:
+      context: ../rXML
+      dockerfile: Dockerfile
+    depends_on:
+      - rabbitmq
+      - mongodb
+      - Postgres
+      - freader
+    networks:
+      - db-network
+
 networks:
   db-network:
 volumes:
