@@ -25,11 +25,5 @@ require (
 	github.com/secsy/goftp v0.0.0-20200609142545-aa2de14babf4
 	github.com/sirupsen/logrus v1.6.0
 	github.com/streadway/amqp v1.0.0
-	github.com/ugorji/go v1.1.8 // indirect
-	golang.org/x/sys v0.0.0-20200917073148-efd3b9a0ff20 // indirect
-	google.golang.org/protobuf v1.25.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20200902074654-038fdea0a05b // indirect
-	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
-	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
-	gopkg.in/yaml.v2 v2.3.0 // indirect
+
 )

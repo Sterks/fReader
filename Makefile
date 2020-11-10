@@ -14,6 +14,9 @@ GOBASE=$(shell pwd)
 # 	@echo "$(GOBIN)"
 # 	@echo "$(GOFILES)"
 
+db-migrate:
+	migrate -database "postgres://user_ro:4r2w3e1q@127.0.0.1/freader?sslmode=disable" -path ./migrations up
+
 start:
 	docker-compose start
 

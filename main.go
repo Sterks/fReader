@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -8,7 +9,6 @@ import (
 	"github.com/Sterks/fReader/router"
 	"github.com/Sterks/fReader/services"
 	"github.com/robfig/cron/v3"
-
 	_ "net/http/pprof"
 )
 
@@ -28,11 +28,17 @@ func migrationDB(config *config.Config) {
 // TODO Изменять время каждый день
 
 func mainRunner() {
-	configPath := "config/config.prod.toml"
+	configPath := ""
+	getenv := os.Getenv("APPLICATION")
+	if getenv == "production" {
+		configPath = "config/config.prod.toml"
+	} else {
+		configPath = "config/config.toml"
+	}
 	conf := config.NewConf()
 	_, _ = toml.DecodeFile(configPath, &conf)
 
-	migrationDB(conf)
+	//migrationDB(conf)
 
 	c := cron.New()
 	fz223Notification := services.NewFtpReader223(conf)

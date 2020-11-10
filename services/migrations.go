@@ -35,7 +35,7 @@ func (m *Migrations) ConfigureMigration(config *config.Config) {
 	// if err != nil {
 	// m.Logger.ErrorLog("Не могу подключится к базе для выполения миграций", err)
 	mig, err := migrate.New(
-		"github://sterks:596run49R@Sterks/fReader/migrations",
+		"github://sterks:0ab1fa3e589b03243854163d4a84692a5dc61f52@Sterks/fReader/migrations",
 		"postgres://user_ro:4r2w3e1q@Postgres:5432/freader?sslmode=disable",
 		// psqlInfo,
 	)

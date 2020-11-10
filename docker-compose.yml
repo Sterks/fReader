@@ -44,7 +44,7 @@ services:
       - POSTGRES_DB=freader
     ports:
       - "5432:5432"
-  
+
   freader:
     build:
       context: ./
@@ -61,7 +61,7 @@ services:
       - "8080:8080"
     environment:
       - GOLANG=production
-  
+
   unzipper:
     build:
       context: ../rXmlReader
@@ -74,17 +74,17 @@ services:
     networks:
       - db-network
 
-  rxml:
-    build:
-      context: ../rXML
-      dockerfile: Dockerfile
-    depends_on:
-      - rabbitmq
-      - mongodb
-      - Postgres
-      - freader
-    networks:
-      - db-network
+#  rxml:
+#    build:
+#      context: ../rXML
+#      dockerfile: Dockerfile
+#    depends_on:
+#      - rabbitmq
+#      - mongodb
+#      - Postgres
+#      - freader
+#    networks:
+#      - db-network
 
 networks:
   db-network:

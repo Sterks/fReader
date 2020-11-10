@@ -13,7 +13,7 @@
             <p>Итого: {{total = notification + protocols}} </p>
           </div>
         </div>
-      
+
       </div>
     </div>
     <div class="row">
@@ -57,10 +57,11 @@
     },
     methods: {
       updateLastID () {
-        Axios.get(`http://127.0.0.1:8000/GetID`).then(response => {
+        Axios.get(`http://127.0.0.1:8080/GetID`).then(response => {
           this.lastID = response.data.LastID;
           this.notification = response.data.Notification;
           this.protocols = response.data.Protocols;
+          console.log(response.data)
         })
       },
       tasks () {
