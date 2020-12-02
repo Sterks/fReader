@@ -1,9 +1,8 @@
 package config
 
 import (
-	"log"
-
 	"github.com/BurntSushi/toml"
+	"log"
 )
 
 //Config ...
@@ -15,6 +14,7 @@ type Config struct {
 	FTPServer44  FTPServer44
 	FTPServer223 FTPServer223
 	Postgres     Postgres
+	TimeDownloader TimeDownloader
 }
 
 //MainSettings ...
@@ -27,6 +27,11 @@ type MainSettings struct {
 type Directory struct {
 	RootPath   string `toml:"root_path"`
 	MainFolder string `toml:"main_folder"`
+}
+
+// TimeDownloader ...
+type TimeDownloader struct {
+	From string `toml:"from"`
 }
 
 // Tasks ...
@@ -76,6 +81,7 @@ func NewConf() *Config {
 		FTPServer223: FTPServer223{},
 		FTPServer44:  FTPServer44{},
 		Rabbit:       Rabbit{},
+		TimeDownloader: TimeDownloader{},
 	}
 }
 

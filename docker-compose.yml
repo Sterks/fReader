@@ -45,34 +45,34 @@ services:
     ports:
       - "5432:5432"
 
-  freader:
-    build:
-      context: ./
-      dockerfile: Dockerfile
-    depends_on:
-      - rabbitmq
-      - mongodb
-      - Postgres
-    networks:
-      - db-network
-    volumes:
-      - "files_data:/Files"
-    ports:
-      - "8080:8080"
-    environment:
-      - GOLANG=production
+#  freader:
+#    build:
+#      context: ./
+#      dockerfile: Dockerfile
+#    depends_on:
+#      - rabbitmq
+#      - mongodb
+#      - Postgres
+#    networks:
+#      - db-network
+#    volumes:
+#      - "files_data:/Files"
+#    ports:
+#      - "8080:8080"
+#    environment:
+#      - GOLANG=production
 
-  unzipper:
-    build:
-      context: ../rXmlReader
-      dockerfile: Dockerfile
-    depends_on:
-      - rabbitmq
-      - mongodb
-      - Postgres
-      - freader
-    networks:
-      - db-network
+#  unzipper:
+#    build:
+#      context: ../rXmlReader
+#      dockerfile: Dockerfile
+#    depends_on:
+#      - rabbitmq
+#      - mongodb
+#      - Postgres
+#      - freader
+#    networks:
+#      - db-network
 
 #  rxml:
 #    build:

@@ -87,9 +87,9 @@ func Walk(client *goftp.Client, root string, walkFn filepath.WalkFunc, from time
 	for dir := range dirsToCheck {
 		go func(dir string) {
 			files, err := client.ReadDir(dir)
-
 			if err != nil {
 				if err = walkFn(dir, nil, err); err != nil && err != filepath.SkipDir {
+					Logging("Log.txt", root, dir, filepath.Dir(dir) )
 					ret = err
 					close(dirsToCheck)
 					return
@@ -102,13 +102,15 @@ func Walk(client *goftp.Client, root string, walkFn filepath.WalkFunc, from time
 						if file.IsDir() && err == filepath.SkipDir {
 							continue
 						}
+						Logging("Log.txt", root, dir, file.Name() )
 						ret = err
 						close(dirsToCheck)
 						return
 					}
 				}
 
-				if file.IsDir() {
+				isDir := file.IsDir()
+				if isDir {
 					atomic.AddInt32(&workCount, 1)
 					dirsToCheck <- path.Join(dir, file.Name())
 				}
@@ -120,5 +122,18 @@ func Walk(client *goftp.Client, root string, walkFn filepath.WalkFunc, from time
 			}
 		}(dir)
 	}
+
 	return ret
+}
+
+func Logging(path string, root string, dir string, filen string) error {
+	file, err := os.Create(path)
+	defer file.Close()
+	if err != nil {
+		log.Println("Не могу создать файл для лога", err)
+		return err
+	}
+	st := fmt.Sprintf("Директория где обраатывается - %s, еще папка - %s, файл - %s ", root, dir, filen)
+	_, _ = file.Write([]byte(st))
+	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"regexp"
 	"time"
@@ -38,10 +39,15 @@ type DatePeriod223 struct {
 }
 
 //AddTimeNow Установливаем дату на текущий момент
-func (f *FtpReader223) AddTimeNow() {
+func (f *FtpReader223) AddTimeNow(config *config.Config) {
+	from, err := time.Parse("2006-01-02", config.TimeDownloader.From)
+	if err != nil {
+		log.Fatalf("Некорректно указана дата - %v", err)
+	}
+	f.Data.From = from
 	f.Data.To = time.Now()
-	y, m, d := f.Data.To.Date()
-	f.Data.From = time.Date(y, m, d, 0, 0, 0, 0, f.Data.To.Location())
+	//y, m, d := f.Data.To.Date()
+	//f.Data.From = time.Date(y, m, d, 0, 0, 0, 0, f.Data.To.Location())
 	// str := "2020-09-14"
 	// from, _ := time.Parse("2006-01-02", str)
 	// f.Data.From = from
@@ -140,7 +146,7 @@ func (f *FtpReader223) GetFileInfo(regions []model.SourceRegions, typeFile strin
 
 							//Можно ускорить если передавать в канал
 							informations = append(informations, informationFile)
-							// f.Logger.InfoLog("Сейчас обрабатываем файл - ", fullPath)
+							f.Logger.InfoLog("Сейчас обрабатываем файл -", fullPath)
 							return nil
 						}, f.Data.From, f.Data.To); err2 != nil {
 							f.Logger.ErrorLog("Информация из Walk", err2)
@@ -167,7 +173,7 @@ func (f *FtpReader223) GetFileInfo(regions []model.SourceRegions, typeFile strin
 							informationFile.Region = region
 							informationFile.TypeFile = typeFile
 							informations = append(informations, informationFile)
-							// f.Logger.InfoLog("Сейчас обрабатываем файл - ", fullPath)
+							f.Logger.InfoLog("Сейчас обрабатываем файл - ", fullPath)
 							return nil
 						}, f.Data.From, f.Data.To); err2 != nil {
 							f.Logger.ErrorLog("Информация из Walk", err2)

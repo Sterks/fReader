@@ -9,7 +9,7 @@ import (
 
 // DownloaderFtp ...
 type DownloaderFtp interface {
-	AddTimeNow()
+	AddTimeNow(config *config.Config)
 	Connect(config *config.Config) *goftp.Client
 	Start(config *config.Config)
 	GetListFolder()
@@ -20,7 +20,7 @@ type DownloaderFtp interface {
 
 // StartService Interface
 func StartService(down DownloaderFtp, config *config.Config, typeFile string) {
-	down.AddTimeNow()
+	down.AddTimeNow(config)
 	down.Connect(config)
 	down.Start(config)
 	down.GetListFolder()
@@ -31,7 +31,7 @@ func StartService(down DownloaderFtp, config *config.Config, typeFile string) {
 
 // StartService223 Interface
 func StartService223(down DownloaderFtp, config *config.Config, typeFile string) {
-	down.AddTimeNow()
+	down.AddTimeNow(config)
 	down.Connect(config)
 	down.Start(config)
 	down.GetListFolder()

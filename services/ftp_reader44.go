@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"time"
 
@@ -39,10 +40,15 @@ type DatePeriod struct {
 }
 
 // AddTimeNow Установливаем дату на текущий момент
-func (f *FtpReader44) AddTimeNow() {
+func (f *FtpReader44) AddTimeNow(config *config.Config) {
+	from, err := time.Parse("2006-01-02", config.TimeDownloader.From)
+	if err != nil {
+		log.Fatalf("Некорректно указана дата - %v", err)
+	}
+	f.Data.From = from
 	f.Data.To = time.Now()
-	y, m, d := f.Data.To.Date()
-	f.Data.From = time.Date(y, m, d, 0, 0, 0, 0, f.Data.To.Location())
+	//y, m, d := f.Data.To.Date()
+	//f.Data.From = time.Date(y, m, d, 0, 0, 0, 0, f.Data.To.Location())
 }
 
 // NewFtpReader44 Новая структура по 44ФЗ
@@ -62,7 +68,7 @@ func (f *FtpReader44) Connect(config *config.Config) *goftp.Client {
 	ftpServ := goftp.Config{
 		User:     config.FTPServer44.Username,
 		Password: config.FTPServer44.Password,
-		Timeout:  3 * time.Minute,
+		Timeout:  30 * time.Minute,
 	}
 	c, err := goftp.DialConfig(ftpServ, config.FTPServer44.Url44)
 	if err != nil {
@@ -115,12 +121,19 @@ func (f *FtpReader44) GetFileInfo(regions []model.SourceRegions, typeFile string
 			tt = "protocols"
 		}
 		ff := fmt.Sprintf("/fcs_regions/%s/%s", region.RName, tt)
-		if err2 := common.Walk(f.ftp, ff, func(fullPath string, info os.FileInfo, err error) error {
+		if err := common.Walk(f.ftp, ff, func(fullPath string, info os.FileInfo, err error) error {
 			if err != nil {
 				// no permissions is okay, keep walking
+
+				//TODO добавить в исключение ошибку
 				if err.(goftp.Error).Code() == 550 {
 					return nil
 				}
+
+				if err.(goftp.Error).Code() == 10060 {
+					return nil
+				}
+
 				return err
 			}
 			var informationFile models.InformationFile
@@ -131,8 +144,8 @@ func (f *FtpReader44) GetFileInfo(regions []model.SourceRegions, typeFile string
 			informations = append(informations, informationFile)
 			f.Logger.InfoLog("Сейчас обрабатываем файл -", fullPath)
 			return nil
-		}, f.Data.From, f.Data.To); err2 != nil {
-			f.Logger.ErrorLog("Информация из Walk", err2)
+		}, f.Data.From, f.Data.To); err != nil {
+			f.Logger.ErrorLog("Информация из Walk", err)
 		}
 	}
 	return informations

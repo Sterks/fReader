@@ -6,6 +6,9 @@ log_level = "debug"
 root_path = "/fcs_regions"
 main_folder = "/Files"
 
+[TimeDownloader]
+from = "2020-11-26"
+
 [Tasks]
 notifications44 = 1
 notifications223 = 1

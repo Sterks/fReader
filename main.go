@@ -47,7 +47,7 @@ func mainRunner() {
 	_, _ = c.AddFunc("*/29 * * * *", func() { services.StartService223(fz223Notification, conf, "notifications223") })
 	_, _ = c.AddFunc("*/30 * * * *", func() { services.StartService223(fz223Notification, conf, "protocols223") })
 
-	_, _ = c.AddFunc("*/24 * * * *", func() { services.StartService(fz44Notification, conf, "notifications44") })
+	_, _ = c.AddFunc("*/30 * * * *", func() { services.StartService(fz44Notification, conf, "notifications44") })
 	_, _ = c.AddFunc("*/20 * * * *", func() { services.StartService(fz44Notification, conf, "protocols44") })
 	c.Start()
 

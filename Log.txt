@@ -1,0 +1,1 @@
+Директория где обраатывается - /out/published/Sverdlovskaya_obl/purchaseNoticeAE, еще папка - /out/published/Sverdlovskaya_obl/purchaseNoticeAE/daily, файл - \out\published\Sverdlovskaya_obl\purchaseNoticeAE 
